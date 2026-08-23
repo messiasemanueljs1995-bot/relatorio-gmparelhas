@@ -22,13 +22,14 @@
         .btn-copy:hover { background-color: #0f766e; }
         .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 13px; }
         .required::after { content: " *"; color: red; }
+        .status-envio { font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Guarda Municipal de Parelhas</h2>
-    <div class="subtitle">Sistema de Relatório de Plantão</div>
+    <div class="subtitle">Sistema de Relatório de Plantão com Banco de Dados</div>
 
     <div class="row">
         <div>
@@ -67,7 +68,8 @@
     <button type="button" class="btn btn-audio" onclick="iniciarGravacao()">🎤 Ditar Relato por Voz (Falar)</button>
     <textarea id="relato" placeholder="Dite ou digite o relato... O sistema fará a correção ortográfica automática."></textarea>
 
-    <button class="btn" onclick="gerarRelatorio()">Gerar Relatório Formatado e Corrigido</button>
+    <button class="btn" onclick="gerarRelatorio()">Gerar Relatório e Salvar no Banco de Dados</button>
+    <div id="statusEnvio" class="status-envio"></div>
 
     <div id="resultadoFinal" style="display:none;">
         <label style="margin-top: 25px;">Relatório Pronto para Envio:</label>
@@ -77,6 +79,9 @@
 </div>
 
 <script>
+    // Cole o seu link do Apps Script aqui embaixo entre as aspas:
+    const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbxgNY4JhJUr-PPkRBiYGJYDlRC2nHIPNRNG2EznuiAs46F05LQWcQ_9kL9PIpWJn5-m/exec";
+
     const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
 
     document.getElementById('dataRelatorio').valueAsDate = new Date();
@@ -166,7 +171,7 @@
         return linhasFormatadas.join('\n');
     }
 
-    function gerarRelatorio() {
+    async function gerarRelatorio() {
         const data = document.getElementById('dataRelatorio').value;
         const equipe = document.getElementById('equipe').value;
         const chefe = document.getElementById('chefe').value;
@@ -186,6 +191,7 @@
         const partesData = data.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
+        // Exibe o texto pronto na tela
         const textoPronto = `📋 *RELATÓRIO DE PLANTÃO - GM PARELHAS*
 📅 Data: ${dataFormatada} | Equipe: ${equipe}
 🚗 Emprego: ${viatura}
@@ -201,6 +207,38 @@ ${relatoFinal}`;
 
         document.getElementById('textoGerado').textContent = textoPronto;
         document.getElementById('resultadoFinal').style.display = 'block';
+
+        // Envia os dados para a Planilha Google em segundo plano
+        const statusDiv = document.getElementById('statusEnvio');
+        statusDiv.style.display = 'block';
+        statusDiv.style.color = '#2563eb';
+        statusDiv.textContent = "⏳ Salvando relatório na planilha da base...";
+
+        const dadosParaEnviar = {
+            data: dataFormatada,
+            equipe: equipe,
+            chefe: chefe,
+            motorista: motorista,
+            patrulheiro1: patrulheiro1,
+            patrulheiro2: patrulheiro2,
+            viatura: viatura,
+            relatorio: relatoFinal
+        };
+
+        try {
+            await fetch(URL_BANCO_DADOS, {
+                method: 'POST',
+                mode: 'no-cors', // Necessário para aceitar o redirecionamento do Google Apps Script
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosParaEnviar)
+            });
+
+            statusDiv.style.color = '#059669';
+            statusDiv.textContent = "✅ Relatório gerado e salvo no banco de dados com sucesso!";
+        } catch (error) {
+            statusDiv.style.color = '#dc2626';
+            statusDiv.textContent = "⚠️ Relatório gerado, mas houve um erro ao salvar na planilha.";
+        }
     }
 
     function copiarRelatorio() {
