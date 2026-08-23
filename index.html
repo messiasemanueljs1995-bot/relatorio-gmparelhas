@@ -24,7 +24,7 @@
         .btn-copy:hover { background-color: #0f766e; }
         .btn-pdf { background-color: #b91c1c; margin-top: 10px; }
         .btn-pdf:hover { background-color: #991b1b; }
-        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 13px; }
+        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 13px; color: #000; }
         .required::after { content: " *"; color: red; }
         .status-envio { font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
     </style>
@@ -195,17 +195,17 @@
         const partesData = data.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        const textoPronto = `📋 *RELATÓRIO DE PLANTÃO - GM PARELHAS*
+        const textoPronto = `📋 RELATÓRIO DE PLANTÃO - GM PARELHAS
 📅 Data: ${dataFormatada} | Equipe: ${equipe}
 🚗 Emprego: ${viatura}
 
-👥 *Composição da Equipe:*
+👥 Composição da Equipe:
 • Chefe de Guarnição: ${chefe}
 • Motorista: ${motorista}
 • Patrulheiro 01: ${patrulheiro1}
 • Patrulheiro 02: ${patrulheiro2}
 
-📝 *Relato / Ocorrências:*
+📝 Relato / Ocorrências:
 ${relatoFinal}`;
 
         document.getElementById('textoGerado').textContent = textoPronto;
@@ -224,7 +224,7 @@ ${relatoFinal}`;
             patrulheiro1: patrulheiro1,
             patrulheiro2: patrulheiro2,
             viatura: viatura,
-            relatorioFormatado: textoPronto
+            relatorio: textoPronto // Nome correto esperado pelo Apps Script
         };
 
         try {
@@ -236,7 +236,7 @@ ${relatoFinal}`;
             });
 
             statusDiv.style.color = '#059669';
-            statusDiv.textContent = "✅ Relatório salvo na planilha no padrão completo!";
+            statusDiv.textContent = "✅ Relatório salvo na planilha e pronto para PDF!";
         } catch (error) {
             statusDiv.style.color = '#dc2626';
             statusDiv.textContent = "⚠️ Relatório gerado, mas houve um erro ao salvar na planilha.";
@@ -262,7 +262,7 @@ ${relatoFinal}`;
             margin:       10,
             filename:     'relatorio_gm_parelhas.pdf',
             image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
+            html2canvas:  { scale: 2, useCORS: true },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
         html2pdf().from(elemento).set(opt).save();
