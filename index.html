@@ -7,40 +7,67 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 680px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: auto; }
+        .container { max-width: 680px; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin: auto; }
         h2 { text-align: center; color: #1e3a8a; margin-bottom: 5px; }
         .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
         
-        /* Sistema de Abas */
-        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; }
-        .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 15px; font-weight: bold; cursor: pointer; color: #6b7280; text-align: center; }
-        .tab-btn.active { color: #2563eb; border-bottom: 3px solid #2563eb; margin-bottom: -2px; }
+        /* Sistema de Abas Moderno e Estilizado */
+        .tabs { 
+            display: flex; 
+            background: #e2e8f0; 
+            padding: 5px; 
+            border-radius: 10px; 
+            margin-bottom: 25px; 
+            gap: 5px;
+        }
+        .tab-btn { 
+            flex: 1; 
+            padding: 12px 10px; 
+            background: transparent; 
+            border: none; 
+            font-size: 14px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: #475569; 
+            text-align: center; 
+            border-radius: 8px; 
+            transition: all 0.3s ease;
+        }
+        .tab-btn:hover { color: #1e3a8a; background: rgba(255, 255, 255, 0.5); }
+        .tab-btn.active { 
+            background: #1e3a8a; 
+            color: white; 
+            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.3);
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
         label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; color: #374151; font-size: 14px; }
-        select, input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+        select, input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
         textarea { height: 90px; resize: vertical; }
         .row { display: flex; gap: 10px; }
         .row > div { flex: 1; }
         
         /* Blocos de Turnos */
-        .turno-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-top: 15px; }
-        .turno-titulo { font-weight: bold; color: #1e3a8a; font-size: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .turno-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-top: 15px; }
+        .turno-titulo { font-weight: bold; color: #1e3a8a; font-size: 15px; margin-bottom: 10px; }
         
-        /* Seção de Ocorrências Dinâmicas por Turno */
+        /* Ocorrências Dinâmicas */
         .ocorrencias-container { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
-        .ocorrencia-item { background: #fff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 5px; margin-bottom: 8px; position: relative; }
+        .ocorrencia-item { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; margin-bottom: 10px; position: relative; }
         .btn-remover-ocorrencia { background: #fee2e2; color: #991b1b; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; float: right; font-weight: bold; }
         .btn-remover-ocorrencia:hover { background: #fecaca; }
 
         /* Botões */
-        .btn { background-color: #2563eb; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        .btn { background-color: #2563eb; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 20px; font-weight: bold; }
         .btn:hover { background-color: #1d4ed8; }
         .btn-secundario { background-color: #475569; font-size: 13px; padding: 8px; margin-top: 8px; }
         .btn-secundario:hover { background-color: #334155; }
-        .btn-audio { background-color: #059669; margin-top: 5px; }
-        .btn-audio:hover { background-color: #047857; }
+        
+        /* Botão de adicionar ocorrência em Vermelho */
+        .btn-ocorrencia { background-color: #dc2626; font-size: 13px; padding: 9px; margin-top: 8px; color: white; font-weight: bold; }
+        .btn-ocorrencia:hover { background-color: #b91c1c; }
+
         .btn-copy { background-color: #0d9488; margin-top: 10px; }
         .btn-copy:hover { background-color: #0f766e; }
         .btn-pdf { background-color: #b91c1c; margin-top: 10px; }
@@ -48,7 +75,7 @@
         .btn-whatsapp { background-color: #16a34a; margin-top: 10px; }
         .btn-whatsapp:hover { background-color: #15803d; }
 
-        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; margin-top: 10px; font-family: Arial, sans-serif; font-size: 14px; color: #000; line-height: 1.5; white-space: pre-wrap; }
+        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 6px; margin-top: 10px; font-family: Arial, sans-serif; font-size: 14px; color: #000; line-height: 1.5; white-space: pre-wrap; }
         .required::after { content: " *"; color: red; }
         .status-envio { font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
 
@@ -60,20 +87,25 @@
         .historico-item { background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 10px; }
         .historico-header { font-weight: bold; font-size: 13px; color: #1e293b; display: flex; justify-content: space-between; }
         .historico-body { font-size: 12px; color: #475569; margin-top: 5px; }
-        .btn-atalho { background: #e5e7eb; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; color: #374151; margin-right: 5px; margin-bottom: 5px; display: inline-block; }
-        .btn-atalho:hover { background: #d1d5db; }
+        
+        /* Botões de Atalhos Rápidos */
+        .btn-atalho { background: #e2e8f0; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; color: #334155; margin-right: 4px; margin-top: 5px; display: inline-block; }
+        .btn-atalho:hover { background: #cbd5e1; }
+        
+        .escala-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🛡️ Guarda Municipal de Parelhas</h2>
-    <div class="subtitle">Sistema Operacional de Plantão por Etapas</div>
+    <div class="subtitle">Sistema Operacional Inteligente</div>
 
-    <!-- Abas de Navegação -->
+    <!-- Menu de Abas Estilizado -->
     <div class="tabs">
         <button class="tab-btn active" onclick="trocarAba(event, 'aba-novo')">📝 Novo Relatório</button>
-        <button class="tab-btn" onclick="trocarAba(event, 'aba-dash')">📊 Dashboard e Histórico</button>
+        <button class="tab-btn" onclick="trocarAba(event, 'aba-escala')">⚙️ Escalas</button>
+        <button class="tab-btn" onclick="trocarAba(event, 'aba-dash')">📊 Histórico</button>
     </div>
 
     <!-- ABA 1: NOVO RELATÓRIO -->
@@ -85,8 +117,8 @@
             </div>
             <div>
                 <label for="equipe" class="required">👥 Equipe:</label>
-                <select id="equipe">
-                    <option value="">Selecione...</option>
+                <select id="equipe" onchange="carregarEscalaEquipe()">
+                    <option value="">Selecione a equipe...</option>
                     <option value="Alfa">Alfa</option>
                     <option value="Bravo">Bravo</option>
                     <option value="Charlie">Charlie</option>
@@ -112,43 +144,57 @@
         <input type="text" id="viatura" value="Viatura 01 - Equipe Operacional" placeholder="Ex: Viatura 01">
 
         <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e5e7eb;">
-        <h3 style="color: #1e3a8a; font-size: 16px; margin-bottom: 5px;">🕒 Relato Dividido por Turnos e Ocorrências</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Descreva o patrulhamento de cada período e adicione ocorrências ou apoios específicos com horários definidos.</p>
+        <h3 style="color: #1e3a8a; font-size: 16px; margin-bottom: 5px;">🕒 Relato Dividido por Turnos</h3>
 
         <!-- TURNO MANHÃ -->
         <div class="turno-box">
             <div class="turno-titulo">🌅 Turno Matutino</div>
             <label for="resumoManha">Panorama Geral da Manhã:</label>
-            <textarea id="resumoManha" placeholder="Ex: Patrulhamento ostensivo realizado sem alterações relevantes nas escolas..."></textarea>
+            <textarea id="resumoManha" placeholder="Ex: Patrulhamento ostensivo realizado sem alterações..."></textarea>
+            <div>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoManha', 'Patrulhamento ostensivo e preventivo realizado nos logradouros públicos sem alterações.')">🛡️ Sem Alterações</button>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoManha', 'Rondas escolares realizadas com tranquilidade e sem ocorrências.')">🏫 Rondas Escolares</button>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoManha', 'Apoio prestado aos órgãos municipais conforme solicitação.')">🏛️ Apoio Municipal</button>
+            </div>
             
             <div class="ocorrencias-container" id="containerOcorrManha">
                 <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
             </div>
-            <button type="button" class="btn btn-secundario" onclick="adicionarOcorrencia('Manhã')">➕ Adicionar Ocorrência / Apoio na Manhã</button>
+            <button type="button" class="btn btn-ocorrencia" onclick="adicionarOcorrencia('Manhã')">🚨 Adicionar Ocorrência / Apoio na Manhã</button>
         </div>
 
         <!-- TURNO VESPERTINO -->
         <div class="turno-box">
             <div class="turno-titulo">☀️ Turno Vespertino</div>
             <label for="resumoTarde">Panorama Geral da Tarde:</label>
-            <textarea id="resumoTarde" placeholder="Ex: Rondas preventivas nos prédios públicos e órgãos municipais..."></textarea>
+            <textarea id="resumoTarde" placeholder="Ex: Rondas preventivas nos prédios públicos..."></textarea>
+            <div>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoTarde', 'Patrulhamento ostensivo e preventivo realizado nos logradouros públicos sem alterações.')">🛡️ Sem Alterações</button>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoTarde', 'Rondas escolares realizadas com tranquilidade e sem ocorrências.')">🏫 Rondas Escolares</button>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoTarde', 'Apoio prestado aos órgãos municipais conforme solicitação.')">🏛️ Apoio Municipal</button>
+            </div>
             
             <div class="ocorrencias-container" id="containerOcorrTarde">
                 <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
             </div>
-            <button type="button" class="btn btn-secundario" onclick="adicionarOcorrencia('Tarde')">➕ Adicionar Ocorrência / Apoio na Tarde</button>
+            <button type="button" class="btn btn-ocorrencia" onclick="adicionarOcorrencia('Tarde')">🚨 Adicionar Ocorrência / Apoio na Tarde</button>
         </div>
 
         <!-- TURNO NOTURNO -->
         <div class="turno-box">
             <div class="turno-titulo">🌙 Turno Noturno</div>
             <label for="resumoNoite">Panorama Geral da Noite:</label>
-            <textarea id="resumoNoite" placeholder="Ex: Cobertura de eventos e patrulhamento comercial noturno..."></textarea>
+            <textarea id="resumoNoite" placeholder="Ex: Cobertura de eventos e patrulhamento noturno..."></textarea>
+            <div>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoNoite', 'Patrulhamento ostensivo e preventivo realizado nos logradouros públicos sem alterações.')">🛡️ Sem Alterações</button>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoNoite', 'Cobertura de eventos e segurança patrimonial realizada sem alterações.')">🌙 Cobertura Noturna</button>
+                <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoNoite', 'Plantão noturno transcorreu dentro da normalidade e sem ocorrências graves.')">✅ Normalidade</button>
+            </div>
             
             <div class="ocorrencias-container" id="containerOcorrNoite">
                 <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
             </div>
-            <button type="button" class="btn btn-secundario" onclick="adicionarOcorrencia('Noite')">➕ Adicionar Ocorrência / Apoio na Noite</button>
+            <button type="button" class="btn btn-ocorrencia" onclick="adicionarOcorrencia('Noite')">🚨 Adicionar Ocorrência / Apoio na Noite</button>
         </div>
 
         <button class="btn" onclick="gerarRelatorio()" style="margin-top: 25px;">🚀 Consolidar e Gerar Relatório Completo</button>
@@ -163,7 +209,43 @@
         </div>
     </div>
 
-    <!-- ABA 2: DASHBOARD E HISTÓRICO -->
+    <!-- ABA 2: GERENCIAR ESCALAS -->
+    <div id="aba-escala" class="tab-content">
+        <h3 style="color: #1e3a8a; font-size: 16px;">⚙️ Cadastro de Plantel por Equipe</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Configure aqui os integrantes padrão de cada equipe. Quando selecionar a equipe no relatório, eles serão preenchidos automaticamente.</p>
+
+        <div class="row">
+            <div>
+                <label for="configEquipe">Selecione a Equipe:</label>
+                <select id="configEquipe" onchange="carregarFormConfigEscala()">
+                    <option value="Alfa">Equipe Alfa</option>
+                    <option value="Bravo">Equipe Bravo</option>
+                    <option value="Charlie">Equipe Charlie</option>
+                    <option value="Delta">Equipe Delta</option>
+                    <option value="Echo">Equipe Echo</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="escala-box" style="margin-top: 15px;">
+            <label for="cfgChefe">⭐ Chefe de Guarnição Padrão:</label>
+            <select id="cfgChefe" class="agente-select"></select>
+
+            <label for="cfgMotorista">🚗 Motorista Padrão:</label>
+            <select id="cfgMotorista" class="agente-select"></select>
+
+            <label for="cfgPatrulheiro1">👮‍♂️ Patrulheiro 01 Padrão:</label>
+            <select id="cfgPatrulheiro1" class="agente-select"></select>
+
+            <label for="cfgPatrulheiro2">👮‍♂️ Patrulheiro 02 Padrão:</label>
+            <select id="cfgPatrulheiro2" class="agente-select"></select>
+
+            <button class="btn" onclick="salvarEscalaEquipe()" style="margin-top: 15px; background-color: #059669;">💾 Salvar Escala desta Equipe</button>
+            <div id="statusEscala" style="text-align: center; font-size: 13px; font-weight: bold; margin-top: 8px; color: #059669; display: none;">✅ Escala salva com sucesso!</div>
+        </div>
+    </div>
+
+    <!-- ABA 3: DASHBOARD E HISTÓRICO -->
     <div id="aba-dash" class="tab-content">
         <div class="dash-grid">
             <div class="dash-card">
@@ -189,21 +271,24 @@
 
     document.getElementById('dataRelatorio').valueAsDate = new Date();
 
-    // Popular selects de agentes
-    const selects = document.querySelectorAll('.agente-select');
-    selects.forEach(select => {
-        let optPadrao = document.createElement('option');
-        optPadrao.value = "";
-        optPadrao.textContent = "Selecione o agente...";
-        select.appendChild(optPadrao);
+    function popularSelectsAgentes() {
+        const selects = document.querySelectorAll('.agente-select');
+        selects.forEach(select => {
+            let valorAtual = select.value;
+            select.innerHTML = '<option value="">Selecione o agente...</option>';
 
-        agentes.forEach(agente => {
-            let opt = document.createElement('option');
-            opt.value = agente;
-            opt.textContent = agente;
-            select.appendChild(opt);
+            agentes.forEach(agente => {
+                let opt = document.createElement('option');
+                opt.value = agente;
+                opt.textContent = agente;
+                select.appendChild(opt);
+            });
+            select.value = valorAtual;
         });
-    });
+    }
+
+    popularSelectsAgentes();
+    carregarFormConfigEscala();
 
     function trocarAba(evt, idAba) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -216,7 +301,63 @@
         }
     }
 
-    // Função para adicionar campos de ocorrência com horário personalizado por turno
+    function inserirNoPanorama(idCampo, texto) {
+        const campo = document.getElementById(idCampo);
+        if (campo.value.trim() !== "") {
+            campo.value += " " + texto;
+        } else {
+            campo.value = texto;
+        }
+    }
+
+    function salvarEscalaEquipe() {
+        const equipe = document.getElementById('configEquipe').value;
+        const dadosEscala = {
+            chefe: document.getElementById('cfgChefe').value,
+            motorista: document.getElementById('cfgMotorista').value,
+            patrulheiro1: document.getElementById('cfgPatrulheiro1').value,
+            patrulheiro2: document.getElementById('cfgPatrulheiro2').value
+        };
+
+        localStorage.setItem('escala_gm_' + equipe, JSON.stringify(dadosEscala));
+        
+        const msg = document.getElementById('statusEscala');
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    }
+
+    function carregarFormConfigEscala() {
+        const equipe = document.getElementById('configEquipe').value;
+        const salvo = localStorage.getItem('escala_gm_' + equipe);
+        
+        if (salvo) {
+            const dados = JSON.parse(salvo);
+            document.getElementById('cfgChefe').value = dados.chefe || "";
+            document.getElementById('cfgMotorista').value = dados.motorista || "";
+            document.getElementById('cfgPatrulheiro1').value = dados.patrulheiro1 || "";
+            document.getElementById('cfgPatrulheiro2').value = dados.patrulheiro2 || "";
+        } else {
+            document.getElementById('cfgChefe').value = "";
+            document.getElementById('cfgMotorista').value = "";
+            document.getElementById('cfgPatrulheiro1').value = "";
+            document.getElementById('cfgPatrulheiro2').value = "";
+        }
+    }
+
+    function carregarEscalaEquipe() {
+        const equipe = document.getElementById('equipe').value;
+        if (!equipe) return;
+
+        const salvo = localStorage.getItem('escala_gm_' + equipe);
+        if (salvo) {
+            const dados = JSON.parse(salvo);
+            document.getElementById('chefe').value = dados.chefe || "";
+            document.getElementById('motorista').value = dados.motorista || "";
+            document.getElementById('patrulheiro1').value = dados.patrulheiro1 || "";
+            document.getElementById('patrulheiro2').value = dados.patrulheiro2 || "";
+        }
+    }
+
     function adicionarOcorrencia(turno) {
         let containerId = '';
         if (turno === 'Manhã') containerId = 'containerOcorrManha';
@@ -231,19 +372,23 @@
             <button type="button" class="btn-remover-ocorrencia" onclick="this.parentElement.remove()">X Remover</button>
             <div style="display: flex; gap: 10px; margin-bottom: 8px;">
                 <div style="flex: 1;">
-                    <label style="margin:0; font-size:12px;">⏰ Horário Definido:</label>
+                    <label style="margin:0; font-size:12px;">⏰ Horário:</label>
                     <input type="time" class="ocorr-hora" style="padding: 6px;">
                 </div>
                 <div style="flex: 2;">
-                    <label style="margin:0; font-size:12px;">📌 Tipo (Ex: Ronda, Apoio, Ocorrência):</label>
-                    <input type="text" class="ocorr-tipo" placeholder="Ex: Apoio Escolar / Perturbação" style="padding: 6px;">
+                    <label style="margin:0; font-size:12px;">📌 Tipo:</label>
+                    <select class="ocorr-tipo" style="padding: 6px;">
+                        <option value="Ocorrência">Ocorrência</option>
+                        <option value="Apoio">Apoio</option>
+                        <option value="Evento">Evento</option>
+                    </select>
                 </div>
             </div>
-            <label style="margin:0; font-size:12px;">📝 Detalhes da Ocorrência:</label>
-            <textarea class="ocorr-detalhe" placeholder="Descreva o atendimento realizado..." style="height: 60px;"></textarea>
+            <label style="margin:0; font-size:12px;">📝 Detalhes:</label>
+            <textarea class="ocorr-detalhe" placeholder="Descreva o atendimento..." style="height: 60px;"></textarea>
             <div style="margin-top: 5px;">
                 <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Ronda escolar realizada com tranquilidade.')">🏫 Ronda</button>
-                <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Apoio prestado a órgão público municipal.')">🏛️ Apoio Órgão</button>
+                <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Apoio prestado a órgão público municipal.')">🏛️ Órgão Público</button>
                 <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Atendimento a perturbação do sossego público.')">🔊 Perturbação</button>
             </div>
         `;
@@ -252,8 +397,7 @@
 
     function preencherAtalhoOcorr(btn, texto) {
         const item = btn.closest('.ocorrencia-item');
-        const textarea = item.querySelector('.ocorr-detalhe');
-        textarea.value = texto;
+        item.querySelector('.ocorr-detalhe').value = texto;
     }
 
     function corrigirTextoLocal(texto) {
@@ -262,10 +406,9 @@
         const correcoes = {
             "ocrrencia": "ocorrência", "ocrrencias": "ocorrências",
             "pertubação": "perturbação", "pertabação": "perturbação",
-            "sistualçai": "situação", "sistualcai": "situação",
             "traquilo": "tranquilo", "traquila": "tranquila",
             "tebe": "teve", "ppla": "pela", "plantao": "plantão",
-            "guarnicao": "guarnição", "acao": "ação", "viatura": "viatura"
+            "guarnicao": "guarnição", "viatura": "viatura"
         };
         for (let errado in correcoes) {
             let regex = new RegExp("\\b" + errado + "\\b", "gi");
@@ -290,10 +433,10 @@
 
         if (ocorrencias.length > 0) {
             bloco += `Ocorrências e Apoios:\n`;
-            ocorrencias.forEach((ocorr, idx) => {
+            ocorrencias.forEach((ocorr) => {
                 let hora = ocorr.querySelector('.ocorr-hora').value || "Horário não inf.";
-                let tipo = ocorr.querySelector('.ocorr-tipo').value || "Ocorrência Geral";
-                let detalhe = corrigirTextoLocal(ocorr.querySelector('.ocorr-detalhe').value) || "Sem detalhes adicionais.";
+                let tipo = ocorr.querySelector('.ocorr-tipo').value || "Ocorrência";
+                let detalhe = corrigirTextoLocal(ocorr.querySelector('.ocorr-detalhe').value) || "Sem detalhes.";
                 bloco += `  - [${hora}] ${tipo}: ${detalhe}\n`;
             });
         }
@@ -317,7 +460,6 @@
         const partesData = data.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        // Unificando os turnos
         let textoManha = montarTextoTurno("TURNO MATUTINO", "resumoManha", "containerOcorrManha");
         let textoTarde = montarTextoTurno("TURNO VESPERTINO", "resumoTarde", "containerOcorrTarde");
         let textoNoite = montarTextoTurno("TURNO NOTURNO", "resumoNoite", "containerOcorrNoite");
@@ -342,13 +484,8 @@ ${textoNoite}`;
         document.getElementById('textoGerado').textContent = textoPronto;
         document.getElementById('resultadoFinal').style.display = 'block';
 
-        // Salvar no Histórico Local
         salvarNoHistoricoLocal({
-            data: dataFormatada,
-            equipe: equipe,
-            chefe: chefe,
-            viatura: viatura,
-            texto: textoPronto
+            data: dataFormatada, equipe: equipe, chefe: chefe, viatura: viatura, texto: textoPronto
         });
 
         const statusDiv = document.getElementById('statusEnvio');
