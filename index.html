@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório - Guarda Municipal de Parelhas</title>
-    <!-- Biblioteca para gerar PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Importando a biblioteca jsPDF pura -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
         .container { max-width: 600px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: auto; }
@@ -32,16 +32,16 @@
 <body>
 
 <div class="container">
-    <h2>Guarda Municipal de Parelhas</h2>
+    <h2>🛡️ Guarda Municipal de Parelhas</h2>
     <div class="subtitle">Sistema de Relatório de Plantão</div>
 
     <div class="row">
         <div>
-            <label for="dataRelatorio" class="required">Data:</label>
+            <label for="dataRelatorio" class="required">📅 Data:</label>
             <input type="date" id="dataRelatorio">
         </div>
         <div>
-            <label for="equipe" class="required">Equipe:</label>
+            <label for="equipe" class="required">👥 Equipe:</label>
             <select id="equipe">
                 <option value="">Selecione...</option>
                 <option value="Alfa">Alfa</option>
@@ -53,30 +53,30 @@
         </div>
     </div>
 
-    <label for="chefe" class="required">Chefe de Guarnição:</label>
+    <label for="chefe" class="required">⭐ Chefe de Guarnição:</label>
     <select id="chefe" class="agente-select"></select>
 
-    <label for="motorista" class="required">Motorista:</label>
+    <label for="motorista" class="required">🚗 Motorista:</label> <!-- Ajustado com label limpa -->
     <select id="motorista" class="agente-select"></select>
 
-    <label for="patrulheiro1">Patrulheiro 01:</label>
+    <label for="patrulheiro1">👮‍♂️ Patrulheiro 01:</label>
     <select id="patrulheiro1" class="agente-select"></select>
 
-    <label for="patrulheiro2">Patrulheiro 02:</label>
+    <label for="patrulheiro2">👮‍♂️ Patrulheiro 02:</label>
     <select id="patrulheiro2" class="agente-select"></select>
 
-    <label for="viatura">Viaturas e Equipamentos:</label>
+    <label for="viatura">🚗 Viaturas e Equipamentos:</label>
     <input type="text" id="viatura" value="Viatura 01 - Equipe Operacional" placeholder="Ex: Viatura 01">
 
-    <label for="relato">Ocorrências / Relato do Plantão:</label>
+    <label for="relato">📝 Ocorrências / Relato do Plantão:</label>
     <button type="button" class="btn btn-audio" onclick="iniciarGravacao()">🎤 Ditar Relato por Voz (Falar)</button>
     <textarea id="relato" placeholder="Dite ou digite o relato... O sistema fará a correção ortográfica automática."></textarea>
 
-    <button class="btn" onclick="gerarRelatorio()">Gerar Relatório e Salvar no Banco de Dados</button>
+    <button class="btn" onclick="gerarRelatorio()">🚀 Gerar Relatório e Salvar no Banco de Dados</button>
     <div id="statusEnvio" class="status-envio"></div>
 
     <div id="resultadoFinal" style="display:none;">
-        <label style="margin-top: 25px;">Relatório Pronto para Envio:</label>
+        <label style="margin-top: 25px;">📄 Relatório Pronto para Envio:</label>
         <div class="output" id="textoGerado"></div>
         <button type="button" class="btn btn-copy" onclick="copiarRelatorio()">📋 Copiar Relatório</button>
         <button type="button" class="btn btn-pdf" onclick="baixarPDF()">📥 Baixar Relatório em PDF</button>
@@ -117,7 +117,7 @@
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
-        alert("Microfone ativado. Pode falar as ocorrências do plantão...");
+        alert("🎤 Microfone ativado. Pode falar as ocorrências do plantão...");
 
         recognition.onresult = function(event) {
             const transcript = event.results[0][0].transcript;
@@ -126,7 +126,7 @@
         };
 
         recognition.onerror = function(event) {
-            alert("Erro no reconhecimento de voz: " + event.error);
+            alert("⚠️ Erro no reconhecimento de voz: " + event.error);
         };
 
         recognition.start();
@@ -257,15 +257,22 @@ ${relatoFinal}`;
     }
 
     function baixarPDF() {
-        const elemento = document.getElementById('textoGerado');
-        const opt = {
-            margin:       10,
-            filename:     'relatorio_gm_parelhas.pdf',
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, useCORS: true, logging: true },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-        html2pdf().from(elemento).set(opt).save();
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        const textoGerado = document.getElementById('textoGerado').textContent;
+        
+        const margemX = 15;
+        const margemY = 20;
+        const larguraMaxima = 180;
+
+        doc.setFont("Helvetica", "normal");
+        doc.setFontSize(11);
+
+        const linhasDoTexto = doc.splitTextToSize(textoGerado, larguraMaxima);
+        doc.text(linhasDoTexto, margemX, margemY);
+
+        doc.save('relatorio_gm_parelhas.pdf');
     }
 </script>
 
