@@ -3,46 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório - Guarda Municipal de Parelhas</title>
+    <title>Painel Operacional - Guarda Municipal de Parelhas</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 680px; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin: auto; }
+        .container { max-width: 950px; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin: auto; }
         h2 { text-align: center; color: #1e3a8a; margin-bottom: 5px; }
         .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
+
+        /* Telas Principais */
+        .tela-secao { display: none; }
+        .tela-secao.ativa { display: block; }
+
+        /* Barra Superior do Dashboard */
+        .dash-topo { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .dash-topo-info h3 { margin: 0; font-size: 15px; color: #1e3a8a; }
+        .dash-topo-info p { margin: 3px 0 0 0; font-size: 12px; color: #64748b; }
+
+        /* Tabela de Escala Mensal Estruturada */
+        .tabela-escala { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+        .tabela-escala th, .tabela-escala td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }
+        .tabela-escala th { background-color: #1e3a8a; color: white; text-align: center; }
+        .tabela-escala tr:nth-child(even) { background-color: #f8fafc; }
         
-        /* Tela de Login */
-        #telaLogin { text-align: center; padding: 20px 0; }
-        .login-box { max-width: 320px; margin: 0 auto; background: #f8fafc; border: 1px solid #cbd5e1; padding: 20px; border-radius: 10px; }
-        
-        /* Sistema de Abas Moderno e Estilizado */
-        .tabs { 
-            display: flex; 
-            background: #e2e8f0; 
-            padding: 5px; 
-            border-radius: 10px; 
-            margin-bottom: 25px; 
-            gap: 5px;
-        }
-        .tab-btn { 
-            flex: 1; 
-            padding: 12px 10px; 
-            background: transparent; 
-            border: none; 
-            font-size: 14px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            color: #475569; 
-            text-align: center; 
-            border-radius: 8px; 
-            transition: all 0.3s ease;
-        }
+        /* Estilo dos inputs (centralizados) */
+        .input-escala-celula { width: 100%; border: none; background: transparent; font-size: 12px; font-family: Arial, sans-serif; box-sizing: border-box; padding: 4px; color: #333; text-align: center; }
+        .input-escala-celula:not([readonly]):focus { background: #fff; outline: 1px solid #2563eb; border-radius: 4px; }
+        .input-escala-celula[readonly] { pointer-events: none; color: #475569; }
+
+        /* Tela de Login Geral / Escala */
+        .login-box { max-width: 320px; margin: 30px auto; background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 10px; text-align: center; }
+
+        /* Sistema de Abas do Formulário */
+        .tabs { display: flex; background: #e2e8f0; padding: 5px; border-radius: 10px; margin-bottom: 25px; gap: 5px; }
+        .tab-btn { flex: 1; padding: 12px 10px; background: transparent; border: none; font-size: 14px; font-weight: bold; cursor: pointer; color: #475569; text-align: center; border-radius: 8px; transition: all 0.3s ease; }
         .tab-btn:hover { color: #1e3a8a; background: rgba(255, 255, 255, 0.5); }
-        .tab-btn.active { 
-            background: #1e3a8a; 
-            color: white; 
-            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.3);
-        }
+        .tab-btn.active { background: #1e3a8a; color: white; box-shadow: 0 2px 6px rgba(30, 58, 138, 0.3); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -82,7 +78,7 @@
         .required::after { content: " *"; color: red; }
         .status-envio { font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
 
-        /* Dashboard & Histórico Cards */
+        /* Histórico Cards */
         .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
         .dash-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
         .dash-card h3 { margin: 0; font-size: 24px; color: #1e3a8a; }
@@ -95,39 +91,94 @@
         .btn-atalho:hover { background: #cbd5e1; }
         .btn-filtro { background: #e2e8f0; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; color: #475569; }
         .btn-filtro.active { background: #1e3a8a; color: white; }
-        
-        .escala-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🛡️ Guarda Municipal de Parelhas</h2>
-    <div class="subtitle">Sistema Operacional Inteligente</div>
+    <div class="subtitle">Sistema Operacional Integrado</div>
 
-    <!-- TELA DE LOGIN -->
-    <div id="telaLogin">
+    <!-- TELA 1: DASHBOARD / ESCALA MENSAL -->
+    <div id="telaDashboard" class="tela-secao ativa">
+        <div class="dash-topo">
+            <div class="dash-topo-info">
+                <h3>📅 Escala de Serviço do Mês</h3>
+                <p id="statusEscalaTexto">Modo Visualização (Somente leitura para o público geral)</p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <!-- Botões que mudam conforme o desbloqueio -->
+                <div id="controlesBloqueados">
+                    <button class="btn" style="margin: 0; width: auto; padding: 8px 12px; font-size: 13px; background-color: #0284c7;" onclick="abrirModalSenhaEscala()">🔓 Desbloquear Escala</button>
+                </div>
+                <div id="controlesDesbloqueados" style="display: none; gap: 8px;">
+                    <button class="btn" style="margin: 0; width: auto; padding: 8px 12px; font-size: 13px; background-color: #059669;" onclick="salvarEBloquearEscala()">💾 Salvar e Bloquear</button>
+                    <button class="btn" style="margin: 0; width: auto; padding: 8px 12px; font-size: 13px; background-color: #64748b;" onclick="bloquearEscalaNovamente()">🔒 Bloquear</button>
+                </div>
+                <button class="btn" style="margin: 0; width: auto; padding: 8px 12px; font-size: 13px; background-color: #1e3a8a;" onclick="irParaLogin()">🔑 Acesso Chefe</button>
+            </div>
+        </div>
+        <div id="statusSalvarEscala" style="font-size: 12px; font-weight: bold; color: #059669; text-align: right; margin-top: -10px; margin-bottom: 10px; display: none;">✅ Escala salva e bloqueada com sucesso!</div>
+
+        <!-- Modal de Senha Específico para Escala (Oculto por padrão) -->
+        <div id="boxSenhaEscala" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; max-width: 300px; margin-left: auto; margin-right: auto;">
+            <p style="font-size: 13px; margin: 0 0 10px 0; font-weight: bold; color: #1e3a8a;">Digite a senha para editar a escala:</p>
+            <input type="password" id="senhaInputEscala" placeholder="Senha..." style="text-align: center; margin-bottom: 8px;">
+            <div style="display: flex; gap: 5px;">
+                <button class="btn" style="margin:0; padding:6px; font-size:13px; background:#059669;" onclick="verificarSenhaEscala()">Confirmar</button>
+                <button class="btn btn-secundario" style="margin:0; padding:6px; font-size:13px;" onclick="fecharModalSenhaEscala()">Cancelar</button>
+            </div>
+            <div id="erroSenhaEscala" style="color: #dc2626; font-size: 11px; font-weight: bold; margin-top: 5px; display: none;">❌ Senha incorreta!</div>
+        </div>
+
+        <div style="overflow-x: auto; max-height: 520px;">
+            <table class="tabela-escala">
+                <thead>
+                    <tr>
+                        <th style="width: 14%;">Data</th>
+                        <th style="width: 22%;">Ch. Guarnição</th>
+                        <th style="width: 22%;">Motorista</th>
+                        <th style="width: 21%;">Patrulheiro 01</th>
+                        <th style="width: 21%;">Patrulheiro 02 / Apoio</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaEscalaMensalCorpo">
+                    <!-- Gerado dinamicamente via JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="btn" style="background-color: #1e3a8a;" onclick="irParaLogin()">🚀 Ir para Formulário de Relatório</button>
+        </div>
+    </div>
+
+    <!-- TELA 2: TELA DE LOGIN DO FORMULÁRIO -->
+    <div id="telaLogin" class="tela-secao">
         <div class="login-box">
-            <h3 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">🔐 Acesso Restrito</h3>
-            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Digite a senha institucional para acessar o sistema.</p>
-            <label for="senhaAcesso" style="text-align: left;">Senha de Operação:</label>
-            <input type="password" id="senhaAcesso" placeholder="Insira a senha..." style="text-align: center; letter-spacing: 2px;">
-            <button class="btn" onclick="fazerLogin()" style="margin-top: 15px;">Entrar no Sistema</button>
+            <h3 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">🔐 Autenticação de Chefia</h3>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Insira a senha de operação para liberar o preenchimento.</p>
+            <label for="senhaAcesso" style="text-align: left;">Senha Institucional:</label>
+            <input type="password" id="senhaAcesso" placeholder="Senha..." style="text-align: center; letter-spacing: 2px;">
+            <button class="btn" onclick="fazerLogin()" style="margin-top: 15px;">Entrar no Formulário</button>
+            <button class="btn btn-secundario" onclick="voltarDashboard()" style="width: 100%; margin-top: 8px;">⬅️ Voltar ao Painel</button>
             <div id="erroLogin" style="color: #dc2626; font-size: 12px; font-weight: bold; margin-top: 10px; display: none;">❌ Senha incorreta! Tente novamente.</div>
         </div>
     </div>
 
-    <!-- CONTEÚDO PRINCIPAL (OCULTO ATÉ O LOGIN) -->
-    <div id="conteudoPrincipal" style="display: none;">
+    <!-- TELA 3: FORMULÁRIO COMPLETO E HISTÓRICO -->
+    <div id="telaFormulario" class="tela-secao">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
-            <span style="font-size: 12px; color: #475569; font-weight: bold;">🟢 Sessão Autenticada</span>
-            <button type="button" onclick="fazerLogout()" style="background: #fee2e2; color: #991b1b; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;">🔒 Sair</button>
+            <span style="font-size: 12px; color: #059669; font-weight: bold;">🟢 Sessão Autenticada (Chefe de Guarnição)</span>
+            <div>
+                <button type="button" onclick="voltarDashboard()" style="background: #e2e8f0; color: #334155; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; margin-right: 5px;">📊 Painel</button>
+                <button type="button" onclick="fazerLogout()" style="background: #fee2e2; color: #991b1b; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;">🔒 Sair</button>
+            </div>
         </div>
 
-        <!-- Menu de Abas Estilizado -->
+        <!-- Menu de Abas -->
         <div class="tabs">
             <button class="tab-btn active" onclick="trocarAba(event, 'aba-novo')">📝 Novo Relatório</button>
-            <button class="tab-btn" onclick="trocarAba(event, 'aba-escala')">⚙️ Escalas</button>
             <button class="tab-btn" onclick="trocarAba(event, 'aba-dash')">📊 Histórico</button>
         </div>
 
@@ -140,7 +191,7 @@
                 </div>
                 <div>
                     <label for="equipe" class="required">👥 Equipe:</label>
-                    <select id="equipe" onchange="carregarEscalaEquipe()">
+                    <select id="equipe">
                         <option value="">Selecione a equipe...</option>
                         <option value="Alfa">Alfa</option>
                         <option value="Bravo">Bravo</option>
@@ -232,43 +283,7 @@
             </div>
         </div>
 
-        <!-- ABA 2: GERENCIAR ESCALAS -->
-        <div id="aba-escala" class="tab-content">
-            <h3 style="color: #1e3a8a; font-size: 16px;">⚙️ Cadastro de Plantel por Equipe</h3>
-            <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Configure aqui os integrantes padrão de cada equipe. Quando selecionar a equipe no relatório, eles serão preenchidos automaticamente.</p>
-
-            <div class="row">
-                <div>
-                    <label for="configEquipe">Selecione a Equipe:</label>
-                    <select id="configEquipe" onchange="carregarFormConfigEscala()">
-                        <option value="Alfa">Equipe Alfa</option>
-                        <option value="Bravo">Equipe Bravo</option>
-                        <option value="Charlie">Equipe Charlie</option>
-                        <option value="Delta">Equipe Delta</option>
-                        <option value="Echo">Equipe Echo</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="escala-box" style="margin-top: 15px;">
-                <label for="cfgChefe">⭐ Chefe de Guarnição Padrão:</label>
-                <select id="cfgChefe" class="agente-select"></select>
-
-                <label for="cfgMotorista">🚗 Motorista Padrão:</label>
-                <select id="cfgMotorista" class="agente-select"></select>
-
-                <label for="cfgPatrulheiro1">👮‍♂️ Patrulheiro 01 Padrão:</label>
-                <select id="cfgPatrulheiro1" class="agente-select"></select>
-
-                <label for="cfgPatrulheiro2">👮‍♂️ Patrulheiro 02 Padrão:</label>
-                <select id="cfgPatrulheiro2" class="agente-select"></select>
-
-                <button class="btn" onclick="salvarEscalaEquipe()" style="margin-top: 15px; background-color: #059669;">💾 Salvar Escala desta Equipe</button>
-                <div id="statusEscala" style="text-align: center; font-size: 13px; font-weight: bold; margin-top: 8px; color: #059669; display: none;">✅ Escala salva com sucesso!</div>
-            </div>
-        </div>
-
-        <!-- ABA 3: DASHBOARD E HISTÓRICO -->
+        <!-- ABA 2: HISTÓRICO -->
         <div id="aba-dash" class="tab-content">
             <div class="dash-grid">
                 <div class="dash-card">
@@ -283,7 +298,7 @@
 
             <label style="margin-top: 20px; font-size: 16px; color: #1e3a8a;">🔍 Buscar e Filtrar Histórico:</label>
             <div style="margin-top: 5px; margin-bottom: 15px;">
-                <input type="text" id="inputBuscaHistorico" placeholder="Pesquisar por data, chefe ou ocorrência..." oninput="carregarDashboard()" style="margin-bottom: 10px;">
+                <input type="text" id="inputBuscaHistorico" placeholder="Pesquisar por data, chefe ou ocorrência..." oninput="carregarDashboardHistorico()" style="margin-bottom: 10px;">
                 <div style="display: flex; gap: 5px; flex-wrap: wrap;">
                     <button type="button" class="btn-filtro active" onclick="filtrarEquipeHistorico('TODAS', this)">Todas</button>
                     <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Alfa', this)">Alfa</button>
@@ -303,47 +318,252 @@
 </div>
 
 <script>
-    const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbxgNY4JhJUr-PPkRBiYGJYDlRC2nHIPNRNG2EznuiAs46F05LQWcQ_9kL9PIpWJn5-m/exec";
-    const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
-    
-    // Senha padrão configurada (Pode alterar para a senha que preferir, ex: "gm2026")
-    const SENHA_MESTRE = "gm2026"; 
-    let filtroEquipeAtual = 'TODAS';
+    // ==========================================
+// CONFIGURAÇÕES E VARIÁVEIS GLOBAIS
+// ==========================================
+const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbxgNY4JhJUr-PPkRBiYGJYDlRC2nHIPNRNG2EznuiAs46F05LQWcQ_9kL9PIpWJn5-m/exec";
+const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
+const SENHA_ESCALA = "0429";        // Senha apenas para mexer na tabela mensal
+const SENHA_FORMULARIO = "gmp2026"; // Senha apenas para entrar no formulário 
+let filtroEquipeAtual = 'TODAS';
 
-    document.getElementById('dataRelatorio').valueAsDate = new Date();
-
-    // Checa se já estava logado na sessão do navegador
-    window.onload = function() {
-        if (sessionStorage.getItem('gm_logado') === 'true') {
-            liberarAcessoSistema();
-        }
-    };
-
-    function fazerLogin() {
-        const senhaDigitada = document.getElementById('senhaAcesso').value;
-        const erroDiv = document.getElementById('erroLogin');
-
-        if (senhaDigitada === SENHA_MESTRE) {
-            sessionStorage.setItem('gm_logado', 'true');
-            liberarAcessoSistema();
-        } else {
-            erroDiv.style.display = 'block';
-            document.getElementById('senhaAcesso').value = '';
-        }
+// Define a data atual no campo de relatório ao carregar
+document.addEventListener('DOMContentLoaded', () => {
+    const inputData = document.getElementById('dataRelatorio');
+    if (inputData) {
+        inputData.valueAsDate = new Date();
     }
+});
+
+window.onload = function() {
+    if (typeof popularSelectsAgentes === 'function') {
+        popularSelectsAgentes();
+    }
+    carregarEscalaDaNuvem(true); // Carrega direto da planilha ao abrir
+};
+
+// ==========================================
+// FUNÇÕES DA ESCALA MENSAL (SINCRONIZADA)
+// ==========================================
+
+function carregarEscalaDaNuvem(bloqueado = true) {
+    const corpo = document.getElementById('tabelaEscalaMensalCorpo');
+    if (!corpo) return;
+
+    corpo.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #64748b;">Carregando escala da nuvem...</td></tr>`;
+
+    fetch(`${URL_BANCO_DADOS}?acao=carregar_escala`)
+        .then(response => response.json())
+        .then(dadosSalvos => {
+            renderizarTabelaComDados(dadosSalvos, bloqueado);
+        })
+        .catch(error => {
+            console.error("Erro ao carregar escala da nuvem, buscando localmente:", error);
+            // Fallback para o localStorage se falhar a internet
+            let dadosLocais = JSON.parse(localStorage.getItem('escala_mensal_gm_v2') || '{}');
+            renderizarTabelaComDados(dadosLocais, bloqueado);
+        });
+}
+
+function renderizarTabelaComDados(dadosSalvos, bloqueado = true) {
+    const corpo = document.getElementById('tabelaEscalaMensalCorpo');
+    if (!corpo) return;
+    let html = '';
+
+    const dataAtual = new Date();
+    const ano = dataAtual.getFullYear();
+    const mes = dataAtual.getMonth();
+    const diasDaSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+    const ultimoDia = new Date(ano, mes + 1, 0).getDate();
+
+    let atributoReadonly = bloqueado ? 'readonly' : '';
+    let estiloFundoInput = bloqueado ? 'background: transparent; text-align: center;' : 'background: #fff; border: 1px solid #2563eb; border-radius: 4px; text-align: center;';
+
+    for (let dia = 1; dia <= ultimoDia; dia++) {
+        let dataObj = new Date(ano, mes, dia);
+        let diaSemanaStr = diasDaSemana[dataObj.getDay()];
+        let diaStr = dia < 10 ? '0' + dia : '' + dia;
+        let rotuloDia = `${diaStr} - ${diaSemanaStr}`;
+
+        let valCh = dadosSalvos['ch_' + dia] || '';
+        let valMot = dadosSalvos['mot_' + dia] || '';
+        let valP1 = dadosSalvos['p1_' + dia] || '';
+        let valP2 = dadosSalvos['p2_' + dia] || '';
+
+        let fundoEstilo = (diaSemanaStr === 'DOM' || diaSemanaStr === 'SÁB') ? 'background: #fdf2f2;' : '';
+
+        html += `
+            <tr style="${fundoEstilo}">
+                <td style="text-align: center; font-weight: bold; background: #f1f5f9; font-size: 11px;">${rotuloDia}</td>
+                <td><input type="text" class="input-escala-celula" style="${estiloFundoInput}" id="ch_${dia}" value="${valCh}" placeholder="${bloqueado ? '' : 'Chefe...'}" ${atributoReadonly}></td>
+                <td><input type="text" class="input-escala-celula" style="${estiloFundoInput}" id="mot_${dia}" value="${valMot}" placeholder="${bloqueado ? '' : 'Motorista...'}" ${atributoReadonly}></td>
+                <td><input type="text" class="input-escala-celula" style="${estiloFundoInput}" id="p1_${dia}" value="${valP1}" placeholder="${bloqueado ? '' : 'Patrulheiro 1...'}" ${atributoReadonly}></td>
+                <td><input type="text" class="input-escala-celula" style="${estiloFundoInput}" id="p2_${dia}" value="${valP2}" placeholder="${bloqueado ? '' : 'Patrulheiro 2...'}" ${atributoReadonly}></td>
+            </tr>
+        `;
+    }
+    corpo.innerHTML = html;
+}
+
+function abrirModalSenhaEscala() {
+    const box = document.getElementById('boxSenhaEscala');
+    if (box) box.style.display = 'block';
+    const inputSenha = document.getElementById('senhaInputEscala');
+    if (inputSenha) {
+        inputSenha.value = '';
+        inputSenha.focus();
+    }
+    const erro = document.getElementById('erroSenhaEscala');
+    if (erro) erro.style.display = 'none';
+}
+
+function fecharModalSenhaEscala() {
+    const box = document.getElementById('boxSenhaEscala');
+    if (box) box.style.display = 'none';
+}
+
+function verificarSenhaEscala() {
+    const senhaDigitada = document.getElementById('senhaInputEscala').value;
+    const erroDiv = document.getElementById('erroSenhaEscala');
+
+    if (senhaDigitada === SENHA_ESCALA) {
+        fecharModalSenhaEscala();
+        carregarEscalaDaNuvem(false); // Carrega liberado para edição
+        
+        const ctrlBloq = document.getElementById('controlesBloqueados');
+        const ctrlDesbloq = document.getElementById('controlesDesbloqueados');
+        const statusTexto = document.getElementById('statusEscalaTexto');
+
+        if (ctrlBloq) ctrlBloq.style.display = 'none';
+        if (ctrlDesbloq) ctrlDesbloq.style.display = 'flex';
+        if (statusTexto) {
+            statusTexto.textContent = "🔓 Modo Edição Ativo (Insira os nomes e clique em Salvar)";
+            statusTexto.style.color = '#059669';
+        }
+    } else {
+        if (erroDiv) erroDiv.style.display = 'block';
+        document.getElementById('senhaInputEscala').value = '';
+    }
+}
+
+function salvarEBloquearEscala() {
+    let dadosParaSalvar = {};
+    const dataAtual = new Date();
+    const ultimoDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0).getDate();
+
+    for (let dia = 1; dia <= ultimoDia; dia++) {
+        dadosParaSalvar['ch_' + dia] = document.getElementById('ch_' + dia)?.value || '';
+        dadosParaSalvar['mot_' + dia] = document.getElementById('mot_' + dia)?.value || '';
+        dadosParaSalvar['p1_' + dia] = document.getElementById('p1_' + dia)?.value || '';
+        dadosParaSalvar['p2_' + dia] = document.getElementById('p2_' + dia)?.value || '';
+    }
+
+    const statusMsg = document.getElementById('statusSalvarEscala');
+    if (statusMsg) {
+        statusMsg.textContent = "Salvando na nuvem...";
+        statusMsg.style.display = 'block';
+        statusMsg.style.color = '#2563eb';
+    }
+
+    // Envia para o Google Sheets via POST
+    fetch(URL_BANCO_DADOS, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            tipo: 'escala_mensal',
+            escala: dadosParaSalvar
+        })
+    })
+    .then(() => {
+        // Salva localmente também como redundância de segurança
+        localStorage.setItem('escala_mensal_gm_v2', JSON.stringify(dadosParaSalvar));
+        
+        carregarEscalaDaNuvem(true); // Bloqueia e atualiza a tabela
+
+        const ctrlBloq = document.getElementById('controlesBloqueados');
+        const ctrlDesbloq = document.getElementById('controlesDesbloqueados');
+        const statusTexto = document.getElementById('statusEscalaTexto');
+
+        if (ctrlDesbloq) ctrlDesbloq.style.display = 'none';
+        if (ctrlBloq) ctrlBloq.style.display = 'block';
+        if (statusTexto) {
+            statusTexto.textContent = "Modo Visualização (Somente leitura para o público geral)";
+            statusTexto.style.color = '#64748b';
+        }
+
+        if (statusMsg) {
+            statusMsg.textContent = "Salvo com sucesso!";
+            statusMsg.style.color = '#059669';
+            setTimeout(() => { statusMsg.style.display = 'none'; }, 2500);
+        }
+    })
+    .catch(error => {
+        console.error("Erro ao salvar na nuvem:", error);
+        if (statusMsg) {
+            statusMsg.textContent = "Erro ao salvar na nuvem.";
+            statusMsg.style.color = '#dc2626';
+        }
+    });
+}
+
+function bloquearEscalaNovamente() {
+    carregarEscalaDaNuvem(true);
+    const ctrlBloq = document.getElementById('controlesBloqueados');
+    const ctrlDesbloq = document.getElementById('controlesDesbloqueados');
+    const statusTexto = document.getElementById('statusEscalaTexto');
+
+    if (ctrlDesbloq) ctrlDesbloq.style.display = 'none';
+    if (ctrlBloq) ctrlBloq.style.display = 'block';
+    if (statusTexto) {
+        statusTexto.textContent = "Modo Visualização (Somente leitura para o público geral)";
+        statusTexto.style.color = '#64748b';
+    }
+}
+
+// ==========================================
+// CONTROLE DE TELAS E LOGIN
+// ==========================================
+
+function irParaLogin() {
+    if (sessionStorage.getItem('gm_logado') === 'true') {
+        mudarTela('telaFormulario');
+    } else {
+        mudarTela('telaLogin');
+    }
+}
+
+function voltarDashboard() {
+    mudarTela('telaDashboard');
+}
+
+function mudarTela(idTela) {
+    document.querySelectorAll('.tela-secao').forEach(el => el.classList.remove('ativa'));
+    const telaDestino = document.getElementById(idTela);
+    if (telaDestino) telaDestino.classList.add('ativa');
+}
+
+function fazerLogin() {
+    const senhaInput = document.getElementById('senhaAcesso');
+    const erroDiv = document.getElementById('erroLogin');
+    if (!senhaInput) return;
+
+    const senhaDigitada = senhaInput.value;
+
+    if (senhaDigitada === SENHA_FORMULARIO) {
+        sessionStorage.setItem('gm_logado', 'true');
+        senhaInput.value = '';
+        if (erroDiv) erroDiv.style.display = 'none';
+        mudarTela('telaFormulario');
+    } else {
+        if (erroDiv) erroDiv.style.display = 'block';
+        senhaInput.value = '';
+    }
+}
 
     function fazerLogout() {
         sessionStorage.removeItem('gm_logado');
-        document.getElementById('conteudoPrincipal').style.display = 'none';
-        document.getElementById('telaLogin').style.display = 'block';
-        document.getElementById('senhaAcesso').value = '';
-    }
-
-    function liberarAcessoSistema() {
-        document.getElementById('telaLogin').style.display = 'none';
-        document.getElementById('conteudoPrincipal').style.display = 'block';
-        popularSelectsAgentes();
-        carregarFormConfigEscala();
+        voltarDashboard();
     }
 
     function popularSelectsAgentes() {
@@ -369,7 +589,7 @@
         evt.currentTarget.classList.add('active');
 
         if (idAba === 'aba-dash') {
-            carregarDashboard();
+            carregarDashboardHistorico();
         }
     }
 
@@ -379,54 +599,6 @@
             campo.value += " " + texto;
         } else {
             campo.value = texto;
-        }
-    }
-
-    function salvarEscalaEquipe() {
-        const equipe = document.getElementById('configEquipe').value;
-        const dadosEscala = {
-            chefe: document.getElementById('cfgChefe').value,
-            motorista: document.getElementById('cfgMotorista').value,
-            patrulheiro1: document.getElementById('cfgPatrulheiro1').value,
-            patrulheiro2: document.getElementById('cfgPatrulheiro2').value
-        };
-
-        localStorage.setItem('escala_gm_' + equipe, JSON.stringify(dadosEscala));
-        
-        const msg = document.getElementById('statusEscala');
-        msg.style.display = 'block';
-        setTimeout(() => { msg.style.display = 'none'; }, 2000);
-    }
-
-    function carregarFormConfigEscala() {
-        const equipe = document.getElementById('configEquipe').value;
-        const salvo = localStorage.getItem('escala_gm_' + equipe);
-        
-        if (salvo) {
-            const dados = JSON.parse(salvo);
-            document.getElementById('cfgChefe').value = dados.chefe || "";
-            document.getElementById('cfgMotorista').value = dados.motorista || "";
-            document.getElementById('cfgPatrulheiro1').value = dados.patrulheiro1 || "";
-            document.getElementById('cfgPatrulheiro2').value = dados.patrulheiro2 || "";
-        } else {
-            document.getElementById('cfgChefe').value = "";
-            document.getElementById('cfgMotorista').value = "";
-            document.getElementById('cfgPatrulheiro1').value = "";
-            document.getElementById('cfgPatrulheiro2').value = "";
-        }
-    }
-
-    function carregarEscalaEquipe() {
-        const equipe = document.getElementById('equipe').value;
-        if (!equipe) return;
-
-        const salvo = localStorage.getItem('escala_gm_' + equipe);
-        if (salvo) {
-            const dados = JSON.parse(salvo);
-            document.getElementById('chefe').value = dados.chefe || "";
-            document.getElementById('motorista').value = dados.motorista || "";
-            document.getElementById('patrulheiro1').value = dados.patrulheiro1 || "";
-            document.getElementById('patrulheiro2').value = dados.patrulheiro2 || "";
         }
     }
 
@@ -483,7 +655,7 @@
             "guarnicao": "guarnição", "viatura": "viatura"
         };
         for (let errado in correcoes) {
-            let regex = new RegExp("\\b" + errado + "\\b", "gi");
+            let regex = new RegExp("\b" + errado + "\b", "gi");
             textoCorrigido = textoCorrigido.replace(regex, correcoes[errado]);
         }
         return textoCorrigido;
@@ -596,10 +768,10 @@ ${textoNoite}`;
         filtroEquipeAtual = equipe;
         document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
         btnEl.classList.add('active');
-        carregarDashboard();
+        carregarDashboardHistorico();
     }
 
-    function carregarDashboard() {
+    function carregarDashboardHistorico() {
         let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
         document.getElementById('statTotal').textContent = historico.length;
 
