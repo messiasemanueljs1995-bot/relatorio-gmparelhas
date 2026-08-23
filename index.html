@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório - Guarda Municipal de Parelhas</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 600px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: auto; }
+        h2 { text-align: center; color: #1e3a8a; margin-bottom: 5px; }
+        .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
+        label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; color: #374151; }
+        select, input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+        textarea { height: 120px; resize: vertical; }
+        .row { display: flex; gap: 10px; }
+        .row > div { flex: 1; }
+        .btn { background-color: #2563eb; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; font-weight: bold; }
+        .btn:hover { background-color: #1d4ed8; }
+        .btn-audio { background-color: #059669; margin-top: 5px; margin-bottom: 15px; }
+        .btn-audio:hover { background-color: #047857; }
+        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; margin-top: 20px; white-space: pre-wrap; font-family: monospace; font-size: 13px; }
+        .required::after { content: " *"; color: red; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Guarda Municipal de Parelhas</h2>
+    <div class="subtitle">Sistema de Relatório de Plantão</div>
+
+    <div class="row">
+        <div>
+            <label for="dataRelatorio" class="required">Data:</label>
+            <input type="date" id="dataRelatorio">
+        </div>
+        <div>
+            <label for="equipe" class="required">Equipe:</label>
+            <select id="equipe">
+                <option value="">Selecione...</option>
+                <option value="Alfa">Alfa</option>
+                <option value="Bravo">Bravo</option>
+                <option value="Charlie">Charlie</option>
+                <option value="Delta">Delta</option>
+                <option value="Echo">Echo</option>
+            </select>
+        </div>
+    </div>
+
+    <label for="chefe" class="required">Chefe de Guarnição:</label>
+    <select id="chefe" class="agente-select"></select>
+
+    <label for="motorista" class="required">Motorista:</label>
+    <select id="motorista" class="agente-select"></select>
+
+    <label for="patrulheiro1">Patrulheiro 01:</label>
+    <select id="patrulheiro1" class="agente-select"></select>
+
+    <label for="patrulheiro2">Patrulheiro 02:</label>
+    <select id="patrulheiro2" class="agente-select"></select>
+
+    <label for="viatura">Viaturas e Equipamentos:</label>
+    <input type="text" id="viatura" value="Viatura 01 - Equipe Operacional" placeholder="Ex: Viatura 01">
+
+    <label for="relato">Ocorrências / Relato do Plantão:</label>
+    <button type="button" class="btn btn-audio" onclick="iniciarGravacao()">🎤 Ditar Relato por Voz (Falar)</button>
+    <textarea id="relato" placeholder="Dite ou digite o relato... O sistema fará a correção ortográfica automática."></textarea>
+
+    <button class="btn" onclick="gerarRelatorio()">Gerar Relatório Formatado e Corrigido</button>
+
+    <div id="resultadoFinal" style="display:none;">
+        <label>Relatório Pronto para Envio:</label>
+        <div class="output" id="textoGerado"></div>
+    </div>
+</div>
+
+<script>
+    const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
+
+    document.getElementById('dataRelatorio').valueAsDate = new Date();
+
+    const selects = document.querySelectorAll('.agente-select');
+    selects.forEach(select => {
+        let optPadrao = document.createElement('option');
+        optPadrao.value = "";
+        optPadrao.textContent = "Selecione o agente...";
+        select.appendChild(optPadrao);
+
+        agentes.forEach(agente => {
+            let opt = document.createElement('option');
+            opt.value = agente;
+            opt.textContent = agente;
+            select.appendChild(opt);
+        });
+    });
+
+    function iniciarGravacao() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Seu navegador não suporta reconhecimento de voz. Tente usar o Google Chrome.");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'pt-BR';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        alert("Microfone ativado. Pode falar as ocorrências do plantão...");
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            const campoRelato = document.getElementById('relato');
+            campoRelato.value += (campoRelato.value ? " " : "") + transcript;
+        };
+
+        recognition.onerror = function(event) {
+            alert("Erro no reconhecimento de voz: " + event.error);
+        };
+
+        recognition.start();
+    }
+
+    function corrigirTextoLocal(texto) {
+        if (!texto) return "Nenhuma ocorrência registrada.";
+
+        let textoCorrigido = texto;
+        const correcoes = {
+            "ocrrencia": "ocorrência",
+            "ocrrencias": "ocorrências",
+            "pertubação": "perturbação",
+            "pertabação": "perturbação",
+            "sistualçai": "situação",
+            "sistualcai": "situação",
+            "traquilo": "tranquilo",
+            "traquila": "tranquila",
+            "tebe": "teve",
+            "ppla": "pela",
+            "plantao": "plantão",
+            "guarnicao": "guarnição",
+            "acao": "ação",
+            "viatura": "viatura",
+            "acionado": "acionado",
+            "acionados": "acionados"
+        };
+
+        for (let errado in correcoes) {
+            let regex = new RegExp("\\b" + errado + "\\b", "gi");
+            textoCorrigido = textoCorrigido.replace(regex, correcoes[errado]);
+        }
+
+        let linhas = textoCorrigido.split('\n');
+        let linhasFormatadas = linhas.map(linha => {
+            linha = linha.trim();
+            if (linha.length > 0) {
+                linha = linha.charAt(0).toUpperCase() + linha.slice(1);
+                if (!/[.!?]$/.test(linha)) {
+                    linha += '.';
+                }
+            }
+            return linha;
+        });
+
+        return linhasFormatadas.join('\n');
+    }
+
+    function gerarRelatorio() {
+        const data = document.getElementById('dataRelatorio').value;
+        const equipe = document.getElementById('equipe').value;
+        const chefe = document.getElementById('chefe').value;
+        const motorista = document.getElementById('motorista').value;
+        const patrulheiro1 = document.getElementById('patrulheiro1').value || "Não informado";
+        const patrulheiro2 = document.getElementById('patrulheiro2').value || "Não informado";
+        const viatura = document.getElementById('viatura').value;
+        const relatoBruto = document.getElementById('relato').value;
+
+        // Validação dos campos obrigatórios com asterisco vermelho
+        if (!data || !equipe || !chefe || !motorista) {
+            alert("⚠️ Por favor, preencha todos os campos obrigatórios marcados com asterisco (*): Data, Equipe, Chefe de Guarnição e Motorista.");
+            return;
+        }
+
+        const relatoFinal = corrigirTextoLocal(relatoBruto);
+
+        const partesData = data.split('-');
+        const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+
+        const textoPronto = `📋 *RELATÓRIO DE PLANTÃO - GM PARELHAS*
+📅 Data: ${dataFormatada} | Equipe: ${equipe}
+🚗 Emprego: ${viatura}
+
+👥 *Composição da Equipe:*
+• Chefe de Guarnição: ${chefe}
+• Motorista: ${motorista}
+• Patrulheiro 01: ${patrulheiro1}
+• Patrulheiro 02: ${patrulheiro2}
+
+📝 *Relato / Ocorrências:*
+${relatoFinal}`;
+
+        document.getElementById('textoGerado').textContent = textoPronto;
+        document.getElementById('resultadoFinal').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
