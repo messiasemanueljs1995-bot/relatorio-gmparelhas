@@ -88,9 +88,11 @@
         .historico-header { font-weight: bold; font-size: 13px; color: #1e293b; display: flex; justify-content: space-between; }
         .historico-body { font-size: 12px; color: #475569; margin-top: 5px; }
         
-        /* Botões de Atalhos Rápidos */
+        /* Botões de Atalhos Rápidos e Filtro */
         .btn-atalho { background: #e2e8f0; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; color: #334155; margin-right: 4px; margin-top: 5px; display: inline-block; }
         .btn-atalho:hover { background: #cbd5e1; }
+        .btn-filtro { background: #e2e8f0; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; color: #475569; }
+        .btn-filtro.active { background: #1e3a8a; color: white; }
         
         .escala-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
     </style>
@@ -258,7 +260,20 @@
             </div>
         </div>
 
-        <label style="margin-top: 20px; font-size: 16px; color: #1e3a8a;">📂 Histórico de Relatórios no Aparelho:</label>
+        <label style="margin-top: 20px; font-size: 16px; color: #1e3a8a;">🔍 Buscar e Filtrar Histórico:</label>
+        <div style="margin-top: 5px; margin-bottom: 15px;">
+            <input type="text" id="inputBuscaHistorico" placeholder="Pesquisar por data, chefe ou ocorrência..." oninput="carregarDashboard()" style="margin-bottom: 10px;">
+            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                <button type="button" class="btn-filtro active" onclick="filtrarEquipeHistorico('TODAS', this)">Todas</button>
+                <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Alfa', this)">Alfa</button>
+                <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Bravo', this)">Bravo</button>
+                <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Charlie', this)">Charlie</button>
+                <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Delta', this)">Delta</button>
+                <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Echo', this)">Echo</button>
+            </div>
+        </div>
+
+        <label style="margin-top: 15px; font-size: 15px; color: #1e3a8a;">📂 Lista de Relatórios:</label>
         <div id="listaHistorico" style="margin-top: 10px;">
             <p style="color: #64748b; font-size: 13px;">Nenhum relatório salvo no histórico local ainda.</p>
         </div>
@@ -268,6 +283,8 @@
 <script>
     const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbxgNY4JhJUr-PPkRBiYGJYDlRC2nHIPNRNG2EznuiAs46F05LQWcQ_9kL9PIpWJn5-m/exec";
     const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
+    
+    let filtroEquipeAtual = 'TODAS';
 
     document.getElementById('dataRelatorio').valueAsDate = new Date();
 
@@ -516,22 +533,40 @@ ${textoNoite}`;
     function salvarNoHistoricoLocal(registro) {
         let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
         historico.unshift(registro);
-        if (historico.length > 20) historico.pop();
+        if (historico.length > 30) historico.pop();
         localStorage.setItem('gm_historico', JSON.stringify(historico));
+    }
+
+    function filtrarEquipeHistorico(equipe, btnEl) {
+        filtroEquipeAtual = equipe;
+        document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
+        btnEl.classList.add('active');
+        carregarDashboard();
     }
 
     function carregarDashboard() {
         let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
         document.getElementById('statTotal').textContent = historico.length;
 
+        const termoBusca = document.getElementById('inputBuscaHistorico').value.toLowerCase();
         const listaDiv = document.getElementById('listaHistorico');
-        if (historico.length === 0) {
-            listaDiv.innerHTML = '<p style="color: #64748b; font-size: 13px;">Nenhum relatório salvo no histórico local ainda.</p>';
+
+        let historicoFiltrado = historico.filter(item => {
+            let atendeEquipe = (filtroEquipeAtual === 'TODAS' || item.equipe === filtroEquipeAtual);
+            let textoCompleto = (item.data + " " + item.equipe + " " + item.chefe + " " + item.viatura + " " + item.texto).toLowerCase();
+            let atendeBusca = textoCompleto.includes(termoBusca);
+            return atendeEquipe && atendeBusca;
+        });
+
+        if (historicoFiltrado.length === 0) {
+            listaDiv.innerHTML = '<p style="color: #64748b; font-size: 13px;">Nenhum relatório encontrado com esses critérios.</p>';
             return;
         }
 
         let html = '';
-        historico.forEach((item, index) => {
+        historicoFiltrado.forEach((item) => {
+            // Acha o índice original no array completo para abrir o relatório certo
+            let indexReal = historico.findIndex(h => h.data === item.data && h.chefe === item.chefe && h.texto === item.texto);
             html += `
                 <div class="historico-item">
                     <div class="historico-header">
@@ -540,7 +575,7 @@ ${textoNoite}`;
                     </div>
                     <div class="historico-body">
                         🚙 ${item.viatura}<br>
-                        <button type="button" class="btn-atalho" style="margin-top:6px;" onclick="carregarRelatorioHistorico(${index})">👁️ Ver Relatório</button>
+                        <button type="button" class="btn-atalho" style="margin-top:6px;" onclick="carregarRelatorioHistorico(${indexReal})">👁️ Ver Relatório</button>
                     </div>
                 </div>
             `;
