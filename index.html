@@ -18,7 +18,9 @@
         .btn:hover { background-color: #1d4ed8; }
         .btn-audio { background-color: #059669; margin-top: 5px; margin-bottom: 15px; }
         .btn-audio:hover { background-color: #047857; }
-        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; margin-top: 20px; white-space: pre-wrap; font-family: monospace; font-size: 13px; }
+        .btn-copy { background-color: #0d9488; margin-top: 10px; }
+        .btn-copy:hover { background-color: #0f766e; }
+        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; margin-top: 10px; white-space: pre-wrap; font-family: monospace; font-size: 13px; }
         .required::after { content: " *"; color: red; }
     </style>
 </head>
@@ -68,8 +70,9 @@
     <button class="btn" onclick="gerarRelatorio()">Gerar Relatório Formatado e Corrigido</button>
 
     <div id="resultadoFinal" style="display:none;">
-        <label>Relatório Pronto para Envio:</label>
+        <label style="margin-top: 25px;">Relatório Pronto para Envio:</label>
         <div class="output" id="textoGerado"></div>
+        <button type="button" class="btn btn-copy" onclick="copiarRelatorio()">📋 Copiar Relatório</button>
     </div>
 </div>
 
@@ -173,7 +176,6 @@
         const viatura = document.getElementById('viatura').value;
         const relatoBruto = document.getElementById('relato').value;
 
-        // Validação dos campos obrigatórios com asterisco vermelho
         if (!data || !equipe || !chefe || !motorista) {
             alert("⚠️ Por favor, preencha todos os campos obrigatórios marcados com asterisco (*): Data, Equipe, Chefe de Guarnição e Motorista.");
             return;
@@ -199,6 +201,21 @@ ${relatoFinal}`;
 
         document.getElementById('textoGerado').textContent = textoPronto;
         document.getElementById('resultadoFinal').style.display = 'block';
+    }
+
+    function copiarRelatorio() {
+        const textoGerado = document.getElementById('textoGerado').textContent;
+        navigator.clipboard.writeText(textoGerado).then(() => {
+            const btnCopiar = document.querySelector('.btn-copy');
+            btnCopiar.textContent = "✅ Relatório Copiado com Sucesso!";
+            btnCopiar.style.backgroundColor = "#047857";
+            setTimeout(() => {
+                btnCopiar.textContent = "📋 Copiar Relatório";
+                btnCopiar.style.backgroundColor = "#0d9488";
+            }, 2500);
+        }).catch(err => {
+            alert("Erro ao tentar copiar o texto.");
+        });
     }
 </script>
 
