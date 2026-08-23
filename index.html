@@ -4,92 +4,192 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório - Guarda Municipal de Parelhas</title>
-    <!-- Importando a biblioteca jsPDF pura -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 600px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: auto; }
+        .container { max-width: 680px; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin: auto; }
         h2 { text-align: center; color: #1e3a8a; margin-bottom: 5px; }
         .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
-        label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; color: #374151; }
+        
+        /* Sistema de Abas */
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; }
+        .tab-btn { flex: 1; padding: 12px; background: none; border: none; font-size: 15px; font-weight: bold; cursor: pointer; color: #6b7280; text-align: center; }
+        .tab-btn.active { color: #2563eb; border-bottom: 3px solid #2563eb; margin-bottom: -2px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; color: #374151; font-size: 14px; }
         select, input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
-        textarea { height: 120px; resize: vertical; }
+        textarea { height: 90px; resize: vertical; }
         .row { display: flex; gap: 10px; }
         .row > div { flex: 1; }
+        
+        /* Blocos de Turnos */
+        .turno-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 15px; margin-top: 15px; }
+        .turno-titulo { font-weight: bold; color: #1e3a8a; font-size: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Seção de Ocorrências Dinâmicas por Turno */
+        .ocorrencias-container { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
+        .ocorrencia-item { background: #fff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 5px; margin-bottom: 8px; position: relative; }
+        .btn-remover-ocorrencia { background: #fee2e2; color: #991b1b; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; float: right; font-weight: bold; }
+        .btn-remover-ocorrencia:hover { background: #fecaca; }
+
+        /* Botões */
         .btn { background-color: #2563eb; color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 20px; font-weight: bold; }
         .btn:hover { background-color: #1d4ed8; }
-        .btn-audio { background-color: #059669; margin-top: 5px; margin-bottom: 15px; }
+        .btn-secundario { background-color: #475569; font-size: 13px; padding: 8px; margin-top: 8px; }
+        .btn-secundario:hover { background-color: #334155; }
+        .btn-audio { background-color: #059669; margin-top: 5px; }
         .btn-audio:hover { background-color: #047857; }
         .btn-copy { background-color: #0d9488; margin-top: 10px; }
         .btn-copy:hover { background-color: #0f766e; }
         .btn-pdf { background-color: #b91c1c; margin-top: 10px; }
         .btn-pdf:hover { background-color: #991b1b; }
+        .btn-whatsapp { background-color: #16a34a; margin-top: 10px; }
+        .btn-whatsapp:hover { background-color: #15803d; }
+
         .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 5px; margin-top: 10px; font-family: Arial, sans-serif; font-size: 14px; color: #000; line-height: 1.5; white-space: pre-wrap; }
         .required::after { content: " *"; color: red; }
         .status-envio { font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
+
+        /* Dashboard & Histórico Cards */
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .dash-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
+        .dash-card h3 { margin: 0; font-size: 24px; color: #1e3a8a; }
+        .dash-card p { margin: 5px 0 0 0; font-size: 13px; color: #64748b; }
+        .historico-item { background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 10px; }
+        .historico-header { font-weight: bold; font-size: 13px; color: #1e293b; display: flex; justify-content: space-between; }
+        .historico-body { font-size: 12px; color: #475569; margin-top: 5px; }
+        .btn-atalho { background: #e5e7eb; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; color: #374151; margin-right: 5px; margin-bottom: 5px; display: inline-block; }
+        .btn-atalho:hover { background: #d1d5db; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🛡️ Guarda Municipal de Parelhas</h2>
-    <div class="subtitle">Sistema de Relatório de Plantão</div>
+    <div class="subtitle">Sistema Operacional de Plantão por Etapas</div>
 
-    <div class="row">
-        <div>
-            <label for="dataRelatorio" class="required">📅 Data:</label>
-            <input type="date" id="dataRelatorio">
+    <!-- Abas de Navegação -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="trocarAba(event, 'aba-novo')">📝 Novo Relatório</button>
+        <button class="tab-btn" onclick="trocarAba(event, 'aba-dash')">📊 Dashboard e Histórico</button>
+    </div>
+
+    <!-- ABA 1: NOVO RELATÓRIO -->
+    <div id="aba-novo" class="tab-content active">
+        <div class="row">
+            <div>
+                <label for="dataRelatorio" class="required">📅 Data:</label>
+                <input type="date" id="dataRelatorio">
+            </div>
+            <div>
+                <label for="equipe" class="required">👥 Equipe:</label>
+                <select id="equipe">
+                    <option value="">Selecione...</option>
+                    <option value="Alfa">Alfa</option>
+                    <option value="Bravo">Bravo</option>
+                    <option value="Charlie">Charlie</option>
+                    <option value="Delta">Delta</option>
+                    <option value="Echo">Echo</option>
+                </select>
+            </div>
         </div>
-        <div>
-            <label for="equipe" class="required">👥 Equipe:</label>
-            <select id="equipe">
-                <option value="">Selecione...</option>
-                <option value="Alfa">Alfa</option>
-                <option value="Bravo">Bravo</option>
-                <option value="Charlie">Charlie</option>
-                <option value="Delta">Delta</option>
-                <option value="Echo">Echo</option>
-            </select>
+
+        <label for="chefe" class="required">⭐ Chefe de Guarnição:</label>
+        <select id="chefe" class="agente-select"></select>
+
+        <label for="motorista" class="required">🚗 Motorista:</label>
+        <select id="motorista" class="agente-select"></select>
+
+        <label for="patrulheiro1">👮‍♂️ Patrulheiro 01:</label>
+        <select id="patrulheiro1" class="agente-select"></select>
+
+        <label for="patrulheiro2">👮‍♂️ Patrulheiro 02:</label>
+        <select id="patrulheiro2" class="agente-select"></select>
+
+        <label for="viatura">🚙 Viaturas e Equipamentos:</label>
+        <input type="text" id="viatura" value="Viatura 01 - Equipe Operacional" placeholder="Ex: Viatura 01">
+
+        <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e5e7eb;">
+        <h3 style="color: #1e3a8a; font-size: 16px; margin-bottom: 5px;">🕒 Relato Dividido por Turnos e Ocorrências</h3>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Descreva o patrulhamento de cada período e adicione ocorrências ou apoios específicos com horários definidos.</p>
+
+        <!-- TURNO MANHÃ -->
+        <div class="turno-box">
+            <div class="turno-titulo">🌅 Turno Matutino</div>
+            <label for="resumoManha">Panorama Geral da Manhã:</label>
+            <textarea id="resumoManha" placeholder="Ex: Patrulhamento ostensivo realizado sem alterações relevantes nas escolas..."></textarea>
+            
+            <div class="ocorrencias-container" id="containerOcorrManha">
+                <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
+            </div>
+            <button type="button" class="btn btn-secundario" onclick="adicionarOcorrencia('Manhã')">➕ Adicionar Ocorrência / Apoio na Manhã</button>
+        </div>
+
+        <!-- TURNO VESPERTINO -->
+        <div class="turno-box">
+            <div class="turno-titulo">☀️ Turno Vespertino</div>
+            <label for="resumoTarde">Panorama Geral da Tarde:</label>
+            <textarea id="resumoTarde" placeholder="Ex: Rondas preventivas nos prédios públicos e órgãos municipais..."></textarea>
+            
+            <div class="ocorrencias-container" id="containerOcorrTarde">
+                <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
+            </div>
+            <button type="button" class="btn btn-secundario" onclick="adicionarOcorrencia('Tarde')">➕ Adicionar Ocorrência / Apoio na Tarde</button>
+        </div>
+
+        <!-- TURNO NOTURNO -->
+        <div class="turno-box">
+            <div class="turno-titulo">🌙 Turno Noturno</div>
+            <label for="resumoNoite">Panorama Geral da Noite:</label>
+            <textarea id="resumoNoite" placeholder="Ex: Cobertura de eventos e patrulhamento comercial noturno..."></textarea>
+            
+            <div class="ocorrencias-container" id="containerOcorrNoite">
+                <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
+            </div>
+            <button type="button" class="btn btn-secundario" onclick="adicionarOcorrencia('Noite')">➕ Adicionar Ocorrência / Apoio na Noite</button>
+        </div>
+
+        <button class="btn" onclick="gerarRelatorio()" style="margin-top: 25px;">🚀 Consolidar e Gerar Relatório Completo</button>
+        <div id="statusEnvio" class="status-envio"></div>
+
+        <div id="resultadoFinal" style="display:none;">
+            <label style="margin-top: 25px;">📄 Relatório Consolidado Pronto:</label>
+            <div class="output" id="textoGerado"></div>
+            <button type="button" class="btn btn-whatsapp" onclick="enviarWhatsApp()">💬 Enviar para o WhatsApp</button>
+            <button type="button" class="btn btn-copy" onclick="copiarRelatorio()">📋 Copiar Relatório</button>
+            <button type="button" class="btn btn-pdf" onclick="baixarPDF()">📥 Baixar Relatório em PDF</button>
         </div>
     </div>
 
-    <label for="chefe" class="required">⭐ Chefe de Guarnição:</label>
-    <select id="chefe" class="agente-select"></select>
+    <!-- ABA 2: DASHBOARD E HISTÓRICO -->
+    <div id="aba-dash" class="tab-content">
+        <div class="dash-grid">
+            <div class="dash-card">
+                <h3 id="statTotal">0</h3>
+                <p>Plantões Registrados (Mês)</p>
+            </div>
+            <div class="dash-card">
+                <h3>GM Parelhas</h3>
+                <p>Status Operacional Ativo</p>
+            </div>
+        </div>
 
-    <label for="motorista" class="required">🚗 Motorista:</label> <!-- Ajustado com label limpa -->
-    <select id="motorista" class="agente-select"></select>
-
-    <label for="patrulheiro1">👮‍♂️ Patrulheiro 01:</label>
-    <select id="patrulheiro1" class="agente-select"></select>
-
-    <label for="patrulheiro2">👮‍♂️ Patrulheiro 02:</label>
-    <select id="patrulheiro2" class="agente-select"></select>
-
-    <label for="viatura">🚗 Viaturas e Equipamentos:</label>
-    <input type="text" id="viatura" value="Viatura 01 - Equipe Operacional" placeholder="Ex: Viatura 01">
-
-    <label for="relato">📝 Ocorrências / Relato do Plantão:</label>
-    <button type="button" class="btn btn-audio" onclick="iniciarGravacao()">🎤 Ditar Relato por Voz (Falar)</button>
-    <textarea id="relato" placeholder="Dite ou digite o relato... O sistema fará a correção ortográfica automática."></textarea>
-
-    <button class="btn" onclick="gerarRelatorio()">🚀 Gerar Relatório e Salvar no Banco de Dados</button>
-    <div id="statusEnvio" class="status-envio"></div>
-
-    <div id="resultadoFinal" style="display:none;">
-        <label style="margin-top: 25px;">📄 Relatório Pronto para Envio:</label>
-        <div class="output" id="textoGerado"></div>
-        <button type="button" class="btn btn-copy" onclick="copiarRelatorio()">📋 Copiar Relatório</button>
-        <button type="button" class="btn btn-pdf" onclick="baixarPDF()">📥 Baixar Relatório em PDF</button>
+        <label style="margin-top: 20px; font-size: 16px; color: #1e3a8a;">📂 Histórico de Relatórios no Aparelho:</label>
+        <div id="listaHistorico" style="margin-top: 10px;">
+            <p style="color: #64748b; font-size: 13px;">Nenhum relatório salvo no histórico local ainda.</p>
+        </div>
     </div>
 </div>
 
 <script>
     const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbxgNY4JhJUr-PPkRBiYGJYDlRC2nHIPNRNG2EznuiAs46F05LQWcQ_9kL9PIpWJn5-m/exec";
-
     const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
 
     document.getElementById('dataRelatorio').valueAsDate = new Date();
 
+    // Popular selects de agentes
     const selects = document.querySelectorAll('.agente-select');
     selects.forEach(select => {
         let optPadrao = document.createElement('option');
@@ -105,74 +205,99 @@
         });
     });
 
-    function iniciarGravacao() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            alert("Seu navegador não suporta reconhecimento de voz. Tente usar o Google Chrome.");
-            return;
+    function trocarAba(evt, idAba) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(idAba).classList.add('active');
+        evt.currentTarget.classList.add('active');
+
+        if (idAba === 'aba-dash') {
+            carregarDashboard();
         }
+    }
 
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'pt-BR';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
+    // Função para adicionar campos de ocorrência com horário personalizado por turno
+    function adicionarOcorrencia(turno) {
+        let containerId = '';
+        if (turno === 'Manhã') containerId = 'containerOcorrManha';
+        if (turno === 'Tarde') containerId = 'containerOcorrTarde';
+        if (turno === 'Noite') containerId = 'containerOcorrNoite';
 
-        alert("🎤 Microfone ativado. Pode falar as ocorrências do plantão...");
+        const container = document.getElementById(containerId);
+        const divItem = document.createElement('div');
+        divItem.className = 'ocorrencia-item';
 
-        recognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript;
-            const campoRelato = document.getElementById('relato');
-            campoRelato.value += (campoRelato.value ? " " : "") + transcript;
-        };
+        divItem.innerHTML = `
+            <button type="button" class="btn-remover-ocorrencia" onclick="this.parentElement.remove()">X Remover</button>
+            <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                <div style="flex: 1;">
+                    <label style="margin:0; font-size:12px;">⏰ Horário Definido:</label>
+                    <input type="time" class="ocorr-hora" style="padding: 6px;">
+                </div>
+                <div style="flex: 2;">
+                    <label style="margin:0; font-size:12px;">📌 Tipo (Ex: Ronda, Apoio, Ocorrência):</label>
+                    <input type="text" class="ocorr-tipo" placeholder="Ex: Apoio Escolar / Perturbação" style="padding: 6px;">
+                </div>
+            </div>
+            <label style="margin:0; font-size:12px;">📝 Detalhes da Ocorrência:</label>
+            <textarea class="ocorr-detalhe" placeholder="Descreva o atendimento realizado..." style="height: 60px;"></textarea>
+            <div style="margin-top: 5px;">
+                <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Ronda escolar realizada com tranquilidade.')">🏫 Ronda</button>
+                <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Apoio prestado a órgão público municipal.')">🏛️ Apoio Órgão</button>
+                <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Atendimento a perturbação do sossego público.')">🔊 Perturbação</button>
+            </div>
+        `;
+        container.appendChild(divItem);
+    }
 
-        recognition.onerror = function(event) {
-            alert("⚠️ Erro no reconhecimento de voz: " + event.error);
-        };
-
-        recognition.start();
+    function preencherAtalhoOcorr(btn, texto) {
+        const item = btn.closest('.ocorrencia-item');
+        const textarea = item.querySelector('.ocorr-detalhe');
+        textarea.value = texto;
     }
 
     function corrigirTextoLocal(texto) {
-        if (!texto) return "Nenhuma ocorrência registrada.";
-
+        if (!texto) return "";
         let textoCorrigido = texto;
         const correcoes = {
-            "ocrrencia": "ocorrência",
-            "ocrrencias": "ocorrências",
-            "pertubação": "perturbação",
-            "pertabação": "perturbação",
-            "sistualçai": "situação",
-            "sistualcai": "situação",
-            "traquilo": "tranquilo",
-            "traquila": "tranquila",
-            "tebe": "teve",
-            "ppla": "pela",
-            "plantao": "plantão",
-            "guarnicao": "guarnição",
-            "acao": "ação",
-            "viatura": "viatura",
-            "acionado": "acionado",
-            "acionados": "acionados"
+            "ocrrencia": "ocorrência", "ocrrencias": "ocorrências",
+            "pertubação": "perturbação", "pertabação": "perturbação",
+            "sistualçai": "situação", "sistualcai": "situação",
+            "traquilo": "tranquilo", "traquila": "tranquila",
+            "tebe": "teve", "ppla": "pela", "plantao": "plantão",
+            "guarnicao": "guarnição", "acao": "ação", "viatura": "viatura"
         };
-
         for (let errado in correcoes) {
             let regex = new RegExp("\\b" + errado + "\\b", "gi");
             textoCorrigido = textoCorrigido.replace(regex, correcoes[errado]);
         }
+        return textoCorrigido;
+    }
 
-        let linhas = textoCorrigido.split('\n');
-        let linhasFormatadas = linhas.map(linha => {
-            linha = linha.trim();
-            if (linha.length > 0) {
-                linha = linha.charAt(0).toUpperCase() + linha.slice(1);
-                if (!/[.!?]$/.test(linha)) {
-                    linha += '.';
-                }
-            }
-            return linha;
-        });
+    function montarTextoTurno(nomeTurno, resumoId, containerId) {
+        let resumo = document.getElementById(resumoId).value.trim();
+        resumo = corrigirTextoLocal(resumo);
 
-        return linhasFormatadas.join('\n');
+        const container = document.getElementById(containerId);
+        const ocorrencias = container.querySelectorAll('.ocorrencia-item');
+
+        let bloco = `*${nomeTurno}*\n`;
+        if (resumo) {
+            bloco += `Panorama: ${resumo}\n`;
+        } else if (ocorrencias.length === 0) {
+            bloco += `Sem registros relevantes.\n`;
+        }
+
+        if (ocorrencias.length > 0) {
+            bloco += `Ocorrências e Apoios:\n`;
+            ocorrencias.forEach((ocorr, idx) => {
+                let hora = ocorr.querySelector('.ocorr-hora').value || "Horário não inf.";
+                let tipo = ocorr.querySelector('.ocorr-tipo').value || "Ocorrência Geral";
+                let detalhe = corrigirTextoLocal(ocorr.querySelector('.ocorr-detalhe').value) || "Sem detalhes adicionais.";
+                bloco += `  - [${hora}] ${tipo}: ${detalhe}\n`;
+            });
+        }
+        return bloco;
     }
 
     async function gerarRelatorio() {
@@ -183,17 +308,19 @@
         const patrulheiro1 = document.getElementById('patrulheiro1').value || "Não informado";
         const patrulheiro2 = document.getElementById('patrulheiro2').value || "Não informado";
         const viatura = document.getElementById('viatura').value;
-        const relatoBruto = document.getElementById('relato').value;
 
         if (!data || !equipe || !chefe || !motorista) {
-            alert("⚠️ Por favor, preencha todos os campos obrigatórios marcados com asterisco (*): Data, Equipe, Chefe de Guarnição e Motorista.");
+            alert("⚠️ Por favor, preencha os campos obrigatórios (*): Data, Equipe, Chefe e Motorista.");
             return;
         }
 
-        const relatoFinal = corrigirTextoLocal(relatoBruto);
-
         const partesData = data.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+
+        // Unificando os turnos
+        let textoManha = montarTextoTurno("TURNO MATUTINO", "resumoManha", "containerOcorrManha");
+        let textoTarde = montarTextoTurno("TURNO VESPERTINO", "resumoTarde", "containerOcorrTarde");
+        let textoNoite = montarTextoTurno("TURNO NOTURNO", "resumoNoite", "containerOcorrNoite");
 
         const textoPronto = `RELATÓRIO DE PLANTÃO - GM PARELHAS
 Data: ${dataFormatada} | Equipe: ${equipe}
@@ -205,73 +332,123 @@ Composição da Equipe:
 - Patrulheiro 01: ${patrulheiro1}
 - Patrulheiro 02: ${patrulheiro2}
 
-Relato / Ocorrências:
-${relatoFinal}`;
+---
+RELATO CRONOLÓGICO POR TURNOS:
+
+${textoManha}
+${textoTarde}
+${textoNoite}`;
 
         document.getElementById('textoGerado').textContent = textoPronto;
         document.getElementById('resultadoFinal').style.display = 'block';
 
-        const statusDiv = document.getElementById('statusEnvio');
-        statusDiv.style.display = 'block';
-        statusDiv.style.color = '#2563eb';
-        statusDiv.textContent = "⏳ Salvando relatório formatado na planilha...";
-
-        const dadosParaEnviar = {
+        // Salvar no Histórico Local
+        salvarNoHistoricoLocal({
             data: dataFormatada,
             equipe: equipe,
             chefe: chefe,
-            motorista: motorista,
-            patrulheiro1: patrulheiro1,
-            patrulheiro2: patrulheiro2,
             viatura: viatura,
-            relatorio: textoPronto
+            texto: textoPronto
+        });
+
+        const statusDiv = document.getElementById('statusEnvio');
+        statusDiv.style.display = 'block';
+        statusDiv.style.color = '#2563eb';
+        statusDiv.textContent = "⏳ Salvando relatório na planilha...";
+
+        const dadosParaEnviar = {
+            data: dataFormatada, equipe: equipe, chefe: chefe,
+            motorista: motorista, patrulheiro1: patrulheiro1,
+            patrulheiro2: patrulheiro2, viatura: viatura, relatorio: textoPronto
         };
 
         try {
             await fetch(URL_BANCO_DADOS, {
-                method: 'POST',
-                mode: 'no-cors',
+                method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosParaEnviar)
             });
-
             statusDiv.style.color = '#059669';
-            statusDiv.textContent = "✅ Relatório salvo na planilha e pronto para PDF!";
+            statusDiv.textContent = "✅ Salvo na planilha com sucesso!";
         } catch (error) {
             statusDiv.style.color = '#dc2626';
-            statusDiv.textContent = "⚠️ Relatório gerado, mas houve um erro ao salvar na planilha.";
+            statusDiv.textContent = "⚠️ Salvo no celular, mas erro ao conectar na planilha.";
         }
+    }
+
+    function salvarNoHistoricoLocal(registro) {
+        let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
+        historico.unshift(registro);
+        if (historico.length > 20) historico.pop();
+        localStorage.setItem('gm_historico', JSON.stringify(historico));
+    }
+
+    function carregarDashboard() {
+        let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
+        document.getElementById('statTotal').textContent = historico.length;
+
+        const listaDiv = document.getElementById('listaHistorico');
+        if (historico.length === 0) {
+            listaDiv.innerHTML = '<p style="color: #64748b; font-size: 13px;">Nenhum relatório salvo no histórico local ainda.</p>';
+            return;
+        }
+
+        let html = '';
+        historico.forEach((item, index) => {
+            html += `
+                <div class="historico-item">
+                    <div class="historico-header">
+                        <span>📅 ${item.data} - Equipe ${item.equipe}</span>
+                        <span>⭐ ${item.chefe}</span>
+                    </div>
+                    <div class="historico-body">
+                        🚙 ${item.viatura}<br>
+                        <button type="button" class="btn-atalho" style="margin-top:6px;" onclick="carregarRelatorioHistorico(${index})">👁️ Ver Relatório</button>
+                    </div>
+                </div>
+            `;
+        });
+        listaDiv.innerHTML = html;
+    }
+
+    function carregarRelatorioHistorico(index) {
+        let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
+        let item = historico[index];
+        if (item) {
+            document.getElementById('textoGerado').textContent = item.texto;
+            document.getElementById('resultadoFinal').style.display = 'block';
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('aba-novo').classList.add('active');
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        }
+    }
+
+    function enviarWhatsApp() {
+        const textoGerado = document.getElementById('textoGerado').textContent;
+        const urlWhatsApp = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoGerado)}`;
+        window.open(urlWhatsApp, '_blank');
     }
 
     function copiarRelatorio() {
         const textoGerado = document.getElementById('textoGerado').textContent;
         navigator.clipboard.writeText(textoGerado).then(() => {
-            const btnCopiar = document.querySelector('.btn-copy');
-            btnCopiar.textContent = "✅ Relatório Copiado com Sucesso!";
-            btnCopiar.style.backgroundColor = "#047857";
-            setTimeout(() => {
-                btnCopiar.textContent = "📋 Copiar Relatório";
-                btnCopiar.style.backgroundColor = "#0d9488";
-            }, 2500);
+            const btn = document.querySelector('.btn-whatsapp + .btn-copy');
+            const btnOriginal = btn.textContent;
+            btn.textContent = "✅ Copiado!";
+            setTimeout(() => { btn.textContent = btnOriginal; }, 2000);
         });
     }
 
     function baixarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-
         const textoGerado = document.getElementById('textoGerado').textContent;
         
-        const margemX = 15;
-        const margemY = 20;
-        const larguraMaxima = 180;
-
         doc.setFont("Helvetica", "normal");
         doc.setFontSize(11);
-
-        const linhasDoTexto = doc.splitTextToSize(textoGerado, larguraMaxima);
-        doc.text(linhasDoTexto, margemX, margemY);
-
+        const linhasDoTexto = doc.splitTextToSize(textoGerado, 180);
+        doc.text(linhasDoTexto, 15, 20);
         doc.save('relatorio_gm_parelhas.pdf');
     }
 </script>
