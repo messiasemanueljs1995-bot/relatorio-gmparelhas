@@ -27,17 +27,17 @@
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
         }
         .container {
-            max-width: 900px;
-            margin: 30px auto;
+            max-width: 950px;
+            margin: 20px auto;
             background: white;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
         .tela-secao { display: none; }
         .tela-secao.ativa { display: block; }
         
-        /* Estilos da Tela Inicial */
+        /* Tela Inicial */
         .dashboard-menu {
             display: flex;
             flex-direction: column;
@@ -64,16 +64,40 @@
         .btn-secundario { background-color: #475569; }
         .btn-secundario:hover { background-color: #334155; }
 
-        /* Tabelas */
+        /* Abas Internas do Formulário */
+        .abas-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-aba {
+            padding: 10px 15px;
+            background: #e2e8f0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #475569;
+        }
+        .btn-aba.ativa-aba {
+            background: var(--primary);
+            color: white;
+        }
+        .conteudo-aba { display: none; }
+        .conteudo-aba.ativa-conteudo { display: block; }
+
+        /* Tabelas e Formulários */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid #cbd5e1; padding: 10px; font-size: 13px; text-align: center; }
         th { background-color: #f1f5f9; color: #334155; }
         
-        /* Formulários e Inputs */
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        textarea { resize: vertical; height: 100px; }
+        textarea { resize: vertical; height: 90px; }
         
         .btn-acao {
             background-color: var(--success);
@@ -91,20 +115,22 @@
         .btn-voz {
             background-color: #e2e8f0;
             border: 1px solid #cbd5e1;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
-            margin-top: 5px;
+            margin-top: 6px;
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            font-weight: bold;
+            color: #334155;
         }
         .btn-voz:hover { background-color: #cbd5e1; }
         
         .voltar-link {
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: var(--primary);
             text-decoration: none;
             font-weight: bold;
@@ -130,12 +156,10 @@
             </div>
         </div>
 
-        <!-- 2. TELA DE ESCALA MENSAL (LIDA DO GOOGLE SHEETS) -->
+        <!-- 2. TELA DE ESCALA MENSAL -->
         <div id="telaEscala" class="tela-secao">
             <a class="voltar-link" onclick="mudarTela('telaDashboard')">← Voltar ao Início</a>
             <h3>Escala Mensal de Serviço</h3>
-            <p style="font-size: 13px; color: #64748b;">Dados sincronizados com a planilha oficial.</p>
-            
             <div style="overflow-x: auto;">
                 <table>
                     <thead>
@@ -149,7 +173,7 @@
                         </tr>
                     </thead>
                     <tbody id="tabelaEscalaCorpo">
-                        <tr><td colspan="6">Carregando escala da nuvem...</td></tr>
+                        <tr><td colspan="6">Buscando dados da escala...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -167,42 +191,103 @@
             </div>
         </div>
 
-        <!-- 4. TELA DO FORMULÁRIO DE RELATÓRIO -->
+        <!-- 4. TELA DO FORMULÁRIO COMPLETO (COM ABAS, TURNOS E HISTÓRICO) -->
         <div id="telaFormulario" class="tela-secao">
             <a class="voltar-link" onclick="mudarTela('telaDashboard')">← Voltar ao Início</a>
-            <h3>Novo Relatório de Serviço</h3>
-            
-            <div class="form-group">
-                <label>Data do Relatório:</label>
-                <input type="date" id="dataRelatorio">
+            <h3>Sistema de Relatório de Serviço</h3>
+
+            <!-- Abas do Formulário -->
+            <div class="abas-container">
+                <button class="btn-aba ativa-aba" onclick="trocarAbaForm('abaRelatorio', this)">📋 Novo Relatório</button>
+                <button class="btn-aba" onclick="trocarAbaForm('abaEquipes', this)">👥 Pré-definição de Equipes</button>
+                <button class="btn-aba" onclick="trocarAbaForm('abaHistorico', this)">📂 Histórico e Filtros</button>
             </div>
 
-            <!-- Gestão Rápida / Seleção de Equipe -->
-            <div class="form-group">
-                <label>Chefe de Guarnição:</label>
-                <select id="selectChefe"></select>
-            </div>
-            <div class="form-group">
-                <label>Motorista:</label>
-                <select id="selectMotorista"></select>
-            </div>
-            <div class="form-group">
-                <label>Patrulheiro 1:</label>
-                <select id="selectPatrulheiro1"></select>
-            </div>
-            <div class="form-group">
-                <label>Patrulheiro 2:</label>
-                <select id="selectPatrulheiro2"></select>
+            <!-- ABA 1: NOVO RELATÓRIO COM OS 3 TURNOS E BOTÕES DE VOZ -->
+            <div id="abaRelatorio" class="conteudo-aba ativa-conteudo">
+                <div class="form-group">
+                    <label>Data do Relatório:</label>
+                    <input type="date" id="dataRelatorio">
+                </div>
+
+                <div class="form-group">
+                    <label>Chefe de Guarnição:</label>
+                    <select id="selectChefe"></select>
+                </div>
+                <div class="form-group">
+                    <label>Motorista:</label>
+                    <select id="selectMotorista"></select>
+                </div>
+                <div class="form-group">
+                    <label>Patrulheiro 1:</label>
+                    <select id="selectPatrulheiro1"></select>
+                </div>
+                <div class="form-group">
+                    <label>Patrulheiro 2:</label>
+                    <select id="selectPatrulheiro2"></select>
+                </div>
+
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #cbd5e1;">
+
+                <!-- Turno Matutino -->
+                <div class="form-group">
+                    <label>☀️ Ocorrência / Atividades - Turno Matutino:</label>
+                    <textarea id="textoMatutino" placeholder="Relatório do turno matutino..."></textarea>
+                    <button type="button" class="btn-voz" onclick="iniciarReconhecimentoVoz('textoMatutino', this)">🎤 Ditar Matutino por Voz</button>
+                </div>
+
+                <!-- Turno Vespertino -->
+                <div class="form-group">
+                    <label>🌤️ Ocorrência / Atividades - Turno Vespertino:</label>
+                    <textarea id="textoVespertino" placeholder="Relatório do turno vespertino..."></textarea>
+                    <button type="button" class="btn-voz" onclick="iniciarReconhecimentoVoz('textoVespertino', this)">🎤 Ditar Vespertino por Voz</button>
+                </div>
+
+                <!-- Turno Noturno -->
+                <div class="form-group">
+                    <label>🌙 Ocorrência / Atividades - Turno Noturno:</label>
+                    <textarea id="textoNoturno" placeholder="Relatório do turno noturno..."></textarea>
+                    <button type="button" class="btn-voz" onclick="iniciarReconhecimentoVoz('textoNoturno', this)">🎤 Ditar Noturno por Voz</button>
+                </div>
+
+                <button class="btn-acao" onclick="enviarRelatorioConsolidado()" style="margin-top: 15px;">Enviar Relatório Consolidado</button>
+                <p id="statusEnvio" style="text-align: center; margin-top: 10px; font-weight: bold;"></p>
             </div>
 
-            <div class="form-group">
-                <label>Histórico / Ocorrência:</label>
-                <textarea id="textoOcorrencia" placeholder="Descreva os fatos ocorridos no plantão..."></textarea>
-                <button type="button" class="btn-voz" onclick="iniciarReconhecimentoVoz()">🎤 Ditar Ocorrência por Voz</button>
+            <!-- ABA 2: PRÉ-DEFINIÇÃO DE EQUIPES -->
+            <div id="abaEquipes" class="conteudo-aba">
+                <h4>Gerenciamento de Equipes Pré-definidas</h4>
+                <p style="font-size: 13px; color: #64748b;">Salve escalas recorrentes para preenchimento rápido.</p>
+                <div class="form-group">
+                    <label>Nome da Equipe (Ex: Equipe Alfa):</label>
+                    <input type="text" id="nomeEquipeSalvar" placeholder="Nome da equipe...">
+                </div>
+                <button class="btn-acao" style="background-color: var(--primary);" onclick="salvarEquipeLocal()">Salvar Equipe no Navegador</button>
+                <div id="listaEquipesSalvas" style="margin-top: 15px;"></div>
             </div>
 
-            <button class="btn-acao" onclick="enviarRelatorioConsolidado()">Enviar Relatório Consolidado</button>
-            <p id="statusEnvio" style="text-align: center; margin-top: 10px; font-weight: bold;"></p>
+            <!-- ABA 3: HISTÓRICO E FILTROS -->
+            <div id="abaHistorico" class="conteudo-aba">
+                <h4>Histórico de Relatórios</h4>
+                <div class="form-group">
+                    <label>Filtrar por Data:</label>
+                    <input type="date" id="filtroDataHistorico" onchange="filtrarHistorico()">
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Dados Consolidados</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaHistoricoCorpo">
+                            <tr><td colspan="2">Utilize a planilha ou carregue os relatórios salvos.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -225,6 +310,13 @@
             if(idTela === 'telaEscala') {
                 carregarEscalaDoGoogleSheets();
             }
+        }
+
+        function trocarAbaForm(idAba, elementoBtn) {
+            document.querySelectorAll('.conteudo-aba').forEach(el => el.classList.remove('ativa-conteudo'));
+            document.querySelectorAll('.btn-aba').forEach(el => el.classList.remove('ativa-aba'));
+            document.getElementById(idAba).classList.add('ativa-conteudo');
+            elementoBtn.classList.add('ativa-aba');
         }
 
         function fazerLogin() {
@@ -251,7 +343,6 @@
             });
         }
 
-        // --- CARREGAR ESCALA DO GOOGLE SHEETS ---
         function carregarEscalaDoGoogleSheets() {
             const corpo = document.getElementById('tabelaEscalaCorpo');
             corpo.innerHTML = `<tr><td colspan="6">Buscando dados da escala...</td></tr>`;
@@ -260,7 +351,6 @@
                 .then(res => res.json())
                 .then(dados => {
                     let html = '';
-                    // Exemplo de iteração caso a planilha retorne uma lista de dias
                     if(Array.isArray(dados) && dados.length > 0) {
                         dados.forEach(linha => {
                             html += `<tr>
@@ -273,7 +363,7 @@
                             </tr>`;
                         });
                     } else {
-                        html = `<tr><td colspan="6">Nenhuma escala cadastrada na planilha ainda ou formato aguardando configuração.</td></tr>`;
+                        html = `<tr><td colspan="6">Nenhuma escala encontrada na planilha.</td></tr>`;
                     }
                     corpo.innerHTML = html;
                 })
@@ -283,8 +373,8 @@
                 });
         }
 
-        // --- AUXILIAR DE VOZ (SPEECH-TO-TEXT) ---
-        function iniciarReconhecimentoVoz() {
+        // --- AUXILIAR DE VOZ INDIVIDUAL POR TURNO ---
+        function iniciarReconhecimentoVoz(idCampo, elementoBotao) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
                 alert("Seu navegador não suporta assistente de voz. Utilize o Google Chrome.");
@@ -295,13 +385,13 @@
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
 
-            const btnVoz = document.querySelector('.btn-voz');
-            btnVoz.textContent = "🎙️ Ouvindo... Fale agora!";
-            btnVoz.style.backgroundColor = "#fca5a5";
+            const textoOriginal = elementoBotao.textContent;
+            elementoBotao.textContent = "🎙️ Ouvindo... Fale agora!";
+            elementoBotao.style.backgroundColor = "#fca5a5";
 
             recognition.onresult = (event) => {
                 const textoTranscrito = event.results[0][0].transcript;
-                const campo = document.getElementById('textoOcorrencia');
+                const campo = document.getElementById(idCampo);
                 campo.value += (campo.value ? " " : "") + textoTranscrito;
             };
 
@@ -310,11 +400,31 @@
             };
 
             recognition.onsend = recognition.onend = () => {
-                btnVoz.textContent = "🎤 Ditar Ocorrência por Voz";
-                btnVoz.style.backgroundColor = "#e2e8f0";
+                elementoBotao.textContent = textoOriginal;
+                elementoBotao.style.backgroundColor = "#e2e8f0";
             };
 
             recognition.start();
+        }
+
+        // --- SALVAMENTO DE EQUIPES LOCAIS ---
+        function salvarEquipeLocal() {
+            const nome = document.getElementById('nomeEquipeSalvar').value;
+            if(!nome) {
+                alert("Informe um nome para a equipe.");
+                return;
+            }
+            const equipe = {
+                chefe: document.getElementById('selectChefe').value,
+                motorista: document.getElementById('selectMotorista').value,
+                p1: document.getElementById('selectPatrulheiro1').value,
+                p2: document.getElementById('selectPatrulheiro2').value
+            };
+            let equipesSalvas = JSON.parse(localStorage.getItem('gmp_equipes') || '{}');
+            equipesSalvas[nome] = equipe;
+            localStorage.setItem('gmp_equipes', JSON.stringify(equipesSalvas));
+            alert("Equipe salva com sucesso!");
+            document.getElementById('nomeEquipeSalvar').value = '';
         }
 
         // --- ENVIO CONSOLIDADO EM 2 COLUNAS ---
@@ -324,15 +434,18 @@
             const motorista = document.getElementById('selectMotorista').value;
             const p1 = document.getElementById('selectPatrulheiro1').value;
             const p2 = document.getElementById('selectPatrulheiro2').value;
-            const ocorrencia = document.getElementById('textoOcorrencia').value;
+            
+            const matutino = document.getElementById('textoMatutino').value;
+            const vespertino = document.getElementById('textoVespertino').value;
+            const noturno = document.getElementById('textoNoturno').value;
 
             if(!data || !chefe) {
                 alert("Preencha ao menos a data e o chefe de guarnição.");
                 return;
             }
 
-            // Consolidando todos os dados em um único texto estruturado para a Coluna 2
-            const dadosConsolidados = `CHEFE: ${chefe} | MOTORISTA: ${motorista || 'N/D'} | PATRULHEIRO 1: ${p1 || 'N/D'} | PATRULHEIRO 2: ${p2 || 'N/D'} || OCORRÊNCIA: ${ocorrencia || 'Sem alterações.'}`;
+            // Consolidando a equipe e os três turnos em um único bloco limpo para a Coluna 2
+            const dadosConsolidados = `EQUIPE -> Chefe: ${chefe} | Motorista: ${motorista || 'N/D'} | Patrulheiro 1: ${p1 || 'N/D'} | Patrulheiro 2: ${p2 || 'N/D'} || [MATUTINO]: ${matutino || 'Sem alterações'} || [VESPERTINO]: ${vespertino || 'Sem alterações'} || [NOTURNO]: ${noturno || 'Sem alterações'}`;
 
             const status = document.getElementById('statusEnvio');
             status.textContent = "Enviando relatório...";
@@ -351,7 +464,9 @@
             .then(() => {
                 status.textContent = "Relatório enviado com sucesso!";
                 status.style.color = "#059669";
-                document.getElementById('textoOcorrencia').value = '';
+                document.getElementById('textoMatutino').value = '';
+                document.getElementById('textoVespertino').value = '';
+                document.getElementById('textoNoturno').value = '';
                 setTimeout(() => { status.textContent = ""; }, 3000);
             })
             .catch(err => {
