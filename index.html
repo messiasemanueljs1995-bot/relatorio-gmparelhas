@@ -3,853 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Operacional - Guarda Municipal de Parelhas</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <title>Sistema Guarda Municipal - Parelhas</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 950px; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin: auto; }
-        h2 { text-align: center; color: #1e3a8a; margin-bottom: 5px; }
-        .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
-
-        /* Telas Principais */
+        :root {
+            --primary: #1e3a8a;
+            --primary-hover: #1e40af;
+            --success: #059669;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
         .tela-secao { display: none; }
         .tela-secao.ativa { display: block; }
-
-        /* Barra Superior do Dashboard */
-        .dash-topo { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
-        .dash-topo-info h3 { margin: 0; font-size: 15px; color: #1e3a8a; }
-        .dash-topo-info p { margin: 3px 0 0 0; font-size: 12px; color: #64748b; }
-
-        /* Tabela de Escala Mensal Estruturada */
-        .tabela-escala { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
-        .tabela-escala th, .tabela-escala td { border: 1px solid #cbd5e1; padding: 6px; text-align: center; }
-        .tabela-escala th { background-color: #1e3a8a; color: white; text-align: center; }
-        .tabela-escala tr:nth-child(even) { background-color: #f8fafc; }
         
-        /* Estilo dos inputs (centralizados) */
-        .input-escala-celula { width: 100%; border: none; background: transparent; font-size: 12px; font-family: Arial, sans-serif; box-sizing: border-box; padding: 4px; color: #333; text-align: center; }
-        .input-escala-celula:not([readonly]):focus { background: #fff; outline: 1px solid #2563eb; border-radius: 4px; }
-        .input-escala-celula[readonly] { pointer-events: none; color: #475569; }
-
-        /* Tela de Login Geral / Escala */
-        .login-box { max-width: 320px; margin: 30px auto; background: #f8fafc; border: 1px solid #cbd5e1; padding: 25px; border-radius: 10px; text-align: center; }
-
-        /* Sistema de Abas do Formulário */
-        .tabs { display: flex; background: #e2e8f0; padding: 5px; border-radius: 10px; margin-bottom: 25px; gap: 5px; }
-        .tab-btn { flex: 1; padding: 12px 10px; background: transparent; border: none; font-size: 14px; font-weight: bold; cursor: pointer; color: #475569; text-align: center; border-radius: 8px; transition: all 0.3s ease; }
-        .tab-btn:hover { color: #1e3a8a; background: rgba(255, 255, 255, 0.5); }
-        .tab-btn.active { background: #1e3a8a; color: white; box-shadow: 0 2px 6px rgba(30, 58, 138, 0.3); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        label { font-weight: bold; display: block; margin-top: 15px; margin-bottom: 5px; color: #374151; font-size: 14px; }
-        select, input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
-        textarea { height: 90px; resize: vertical; }
-        .row { display: flex; gap: 10px; }
-        .row > div { flex: 1; }
-        
-        /* Blocos de Turnos */
-        .turno-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 15px; margin-top: 15px; }
-        .turno-titulo { font-weight: bold; color: #1e3a8a; font-size: 15px; margin-bottom: 10px; }
-        
-        /* Ocorrências Dinâmicas */
-        .ocorrencias-container { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
-        .ocorrencia-item { background: #fff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; margin-bottom: 10px; position: relative; }
-        .btn-remover-ocorrencia { background: #fee2e2; color: #991b1b; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; float: right; font-weight: bold; }
-        .btn-remover-ocorrencia:hover { background: #fecaca; }
-
-        /* Botões */
-        .btn { background-color: #2563eb; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-size: 16px; cursor: pointer; margin-top: 20px; font-weight: bold; }
-        .btn:hover { background-color: #1d4ed8; }
-        .btn-secundario { background-color: #475569; font-size: 13px; padding: 8px; margin-top: 8px; }
+        /* Estilos da Tela Inicial */
+        .dashboard-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            padding: 40px 0;
+        }
+        .btn-menu {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: background 0.2s, transform 0.1s;
+            text-align: center;
+        }
+        .btn-menu:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+        .btn-secundario { background-color: #475569; }
         .btn-secundario:hover { background-color: #334155; }
+
+        /* Tabelas */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px; font-size: 13px; text-align: center; }
+        th { background-color: #f1f5f9; color: #334155; }
         
-        .btn-ocorrencia { background-color: #dc2626; font-size: 13px; padding: 9px; margin-top: 8px; color: white; font-weight: bold; }
-        .btn-ocorrencia:hover { background-color: #b91c1c; }
-
-        .btn-copy { background-color: #0d9488; margin-top: 10px; }
-        .btn-copy:hover { background-color: #0f766e; }
-        .btn-pdf { background-color: #b91c1c; margin-top: 10px; }
-        .btn-pdf:hover { background-color: #991b1b; }
-        .btn-whatsapp { background-color: #16a34a; margin-top: 10px; }
-        .btn-whatsapp:hover { background-color: #15803d; }
-
-        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 6px; margin-top: 10px; font-family: Arial, sans-serif; font-size: 14px; color: #000; line-height: 1.5; white-space: pre-wrap; }
-        .required::after { content: " *"; color: red; }
-        .status-envio { font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
-
-        /* Histórico Cards */
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .dash-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; text-align: center; }
-        .dash-card h3 { margin: 0; font-size: 24px; color: #1e3a8a; }
-        .dash-card p { margin: 5px 0 0 0; font-size: 13px; color: #64748b; }
-        .historico-item { background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 10px; }
-        .historico-header { font-weight: bold; font-size: 13px; color: #1e293b; display: flex; justify-content: space-between; }
-        .historico-body { font-size: 12px; color: #475569; margin-top: 5px; }
+        /* Formulários e Inputs */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        textarea { resize: vertical; height: 100px; }
         
-        .btn-atalho { background: #e2e8f0; border: none; padding: 5px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; color: #334155; margin-right: 4px; margin-top: 5px; display: inline-block; }
-        .btn-atalho:hover { background: #cbd5e1; }
-        .btn-filtro { background: #e2e8f0; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; color: #475569; }
-        .btn-filtro.active { background: #1e3a8a; color: white; }
+        .btn-acao {
+            background-color: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        .btn-acao:hover { background-color: #047857; }
+        
+        .btn-voz {
+            background-color: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-voz:hover { background-color: #cbd5e1; }
+        
+        .voltar-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .voltar-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>🛡️ Guarda Municipal de Parelhas</h2>
-    <div class="subtitle">Sistema Operacional Integrado</div>
+    <header>
+        <h2>Guarda Municipal de Parelhas - RN</h2>
+    </header>
 
-    <!-- TELA 1: DASHBOARD / ESCALA MENSAL -->
-    <div id="telaDashboard" class="tela-secao ativa">
-        <div class="dash-topo">
-            <div class="dash-topo-info">
-                <h3>📅 Escala de Serviço do Mês</h3>
-                <p id="statusEscalaTexto">Modo Visualização (Somente leitura para o público geral)</p>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <!-- Botões que mudam conforme o desbloqueio -->
-                <div id="controlesBloqueados">
-                    <button class="btn" style="margin: 0; width: auto; padding: 8px 12px; font-size: 13px; background-color: #0284c7;" onclick="abrirModalSenhaEscala()">🔓 Desbloquear Escala</button>
-                </div>
-                <div id="controlesDesbloqueados" style="display: none; gap: 8px;">
-                    <button class="btn" style="margin: 0; width: auto; padding: 8px 12px; font-size: 13px; background-color: #059669;" onclick="salvarEBloquearEscala()">💾 Salvar e Bloquear</button>
-                    <button class="btn" style="margin: 0; width: auto; padding: 8px 12px; font-size: 13px; background-color: #64748b;" onclick="bloquearEscalaNovamente()">🔒 Bloquear</button>
-                </div>
-                <button class="btn" style="margin: 0; width: auto; padding: 8px 12px; font-size: 13px; background-color: #1e3a8a;" onclick="irParaLogin()">🔑 Acesso Chefe</button>
+    <div class="container">
+
+        <!-- 1. TELA INICIAL (DASHBOARD LIMPO) -->
+        <div id="telaDashboard" class="tela-secao ativa">
+            <h3 style="text-align: center; color: #334155;">Painel de Controle Operacional</h3>
+            <div class="dashboard-menu">
+                <button class="btn-menu" onclick="mudarTela('telaEscala')">📅 Mostrar Escala do Mês</button>
+                <button class="btn-menu btn-secundario" onclick="mudarTela('telaLogin')">📝 Ir para o Formulário de Relatório</button>
             </div>
         </div>
-        <div id="statusSalvarEscala" style="font-size: 12px; font-weight: bold; color: #059669; text-align: right; margin-top: -10px; margin-bottom: 10px; display: none;">✅ Escala salva e bloqueada com sucesso!</div>
 
-        <!-- Modal de Senha Específico para Escala (Oculto por padrão) -->
-        <div id="boxSenhaEscala" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; max-width: 300px; margin-left: auto; margin-right: auto;">
-            <p style="font-size: 13px; margin: 0 0 10px 0; font-weight: bold; color: #1e3a8a;">Digite a senha para editar a escala:</p>
-            <input type="password" id="senhaInputEscala" placeholder="Senha..." style="text-align: center; margin-bottom: 8px;">
-            <div style="display: flex; gap: 5px;">
-                <button class="btn" style="margin:0; padding:6px; font-size:13px; background:#059669;" onclick="verificarSenhaEscala()">Confirmar</button>
-                <button class="btn btn-secundario" style="margin:0; padding:6px; font-size:13px;" onclick="fecharModalSenhaEscala()">Cancelar</button>
+        <!-- 2. TELA DE ESCALA MENSAL (LIDA DO GOOGLE SHEETS) -->
+        <div id="telaEscala" class="tela-secao">
+            <a class="voltar-link" onclick="mudarTela('telaDashboard')">← Voltar ao Início</a>
+            <h3>Escala Mensal de Serviço</h3>
+            <p style="font-size: 13px; color: #64748b;">Dados sincronizados com a planilha oficial.</p>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Dia</th>
+                            <th>Ch de guarnição</th>
+                            <th>Motorista</th>
+                            <th>Patrulheiro 1</th>
+                            <th>Patrulheiro 2</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaEscalaCorpo">
+                        <tr><td colspan="6">Carregando escala da nuvem...</td></tr>
+                    </tbody>
+                </table>
             </div>
-            <div id="erroSenhaEscala" style="color: #dc2626; font-size: 11px; font-weight: bold; margin-top: 5px; display: none;">❌ Senha incorreta!</div>
         </div>
 
-        <div style="overflow-x: auto; max-height: 520px;">
-            <table class="tabela-escala">
-                <thead>
-                    <tr>
-                        <th style="width: 14%;">Data</th>
-                        <th style="width: 22%;">Ch. Guarnição</th>
-                        <th style="width: 22%;">Motorista</th>
-                        <th style="width: 21%;">Patrulheiro 01</th>
-                        <th style="width: 21%;">Patrulheiro 02 / Apoio</th>
-                    </tr>
-                </thead>
-                <tbody id="tabelaEscalaMensalCorpo">
-                    <!-- Gerado dinamicamente via JS -->
-                </tbody>
-            </table>
+        <!-- 3. TELA DE LOGIN DO FORMULÁRIO -->
+        <div id="telaLogin" class="tela-secao">
+            <a class="voltar-link" onclick="mudarTela('telaDashboard')">← Voltar ao Início</a>
+            <h3>Acesso Restrito ao Formulário</h3>
+            <div class="form-group" style="max-width: 300px; margin-top: 20px;">
+                <label>Senha de Acesso:</label>
+                <input type="password" id="senhaAcesso" placeholder="Digite a senha...">
+                <button class="btn-acao" style="margin-top: 10px;" onclick="fazerLogin()">Entrar</button>
+                <p id="erroLogin" style="color: red; font-size: 12px; display: none; margin-top: 5px;">Senha incorreta!</p>
+            </div>
         </div>
 
-        <div style="text-align: center; margin-top: 25px;">
-            <button class="btn" style="background-color: #1e3a8a;" onclick="irParaLogin()">🚀 Ir para Formulário de Relatório</button>
+        <!-- 4. TELA DO FORMULÁRIO DE RELATÓRIO -->
+        <div id="telaFormulario" class="tela-secao">
+            <a class="voltar-link" onclick="mudarTela('telaDashboard')">← Voltar ao Início</a>
+            <h3>Novo Relatório de Serviço</h3>
+            
+            <div class="form-group">
+                <label>Data do Relatório:</label>
+                <input type="date" id="dataRelatorio">
+            </div>
+
+            <!-- Gestão Rápida / Seleção de Equipe -->
+            <div class="form-group">
+                <label>Chefe de Guarnição:</label>
+                <select id="selectChefe"></select>
+            </div>
+            <div class="form-group">
+                <label>Motorista:</label>
+                <select id="selectMotorista"></select>
+            </div>
+            <div class="form-group">
+                <label>Patrulheiro 1:</label>
+                <select id="selectPatrulheiro1"></select>
+            </div>
+            <div class="form-group">
+                <label>Patrulheiro 2:</label>
+                <select id="selectPatrulheiro2"></select>
+            </div>
+
+            <div class="form-group">
+                <label>Histórico / Ocorrência:</label>
+                <textarea id="textoOcorrencia" placeholder="Descreva os fatos ocorridos no plantão..."></textarea>
+                <button type="button" class="btn-voz" onclick="iniciarReconhecimentoVoz()">🎤 Ditar Ocorrência por Voz</button>
+            </div>
+
+            <button class="btn-acao" onclick="enviarRelatorioConsolidado()">Enviar Relatório Consolidado</button>
+            <p id="statusEnvio" style="text-align: center; margin-top: 10px; font-weight: bold;"></p>
         </div>
+
     </div>
 
-    <!-- TELA 2: TELA DE LOGIN DO FORMULÁRIO -->
-    <div id="telaLogin" class="tela-secao">
-        <div class="login-box">
-            <h3 style="color: #1e3a8a; margin-top: 0; font-size: 16px;">🔐 Autenticação de Chefia</h3>
-            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Insira a senha de operação para liberar o preenchimento.</p>
-            <label for="senhaAcesso" style="text-align: left;">Senha Institucional:</label>
-            <input type="password" id="senhaAcesso" placeholder="Senha..." style="text-align: center; letter-spacing: 2px;">
-            <button class="btn" onclick="fazerLogin()" style="margin-top: 15px;">Entrar no Formulário</button>
-            <button class="btn btn-secundario" onclick="voltarDashboard()" style="width: 100%; margin-top: 8px;">⬅️ Voltar ao Painel</button>
-            <div id="erroLogin" style="color: #dc2626; font-size: 12px; font-weight: bold; margin-top: 10px; display: none;">❌ Senha incorreta! Tente novamente.</div>
-        </div>
-    </div>
+    <script>
+        const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbxgNY4JhJUr-PPkRBiYGJYDlRC2nHIPNRNG2EznuiAs46F05LQWcQ_9kL9PIpWJn5-m/exec";
+        const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
+        const SENHA_FORMULARIO = "gmp2026";
 
-    <!-- TELA 3: FORMULÁRIO COMPLETO E HISTÓRICO -->
-    <div id="telaFormulario" class="tela-secao">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
-            <span style="font-size: 12px; color: #059669; font-weight: bold;">🟢 Sessão Autenticada (Chefe de Guarnição)</span>
-            <div>
-                <button type="button" onclick="voltarDashboard()" style="background: #e2e8f0; color: #334155; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; margin-right: 5px;">📊 Painel</button>
-                <button type="button" onclick="fazerLogout()" style="background: #fee2e2; color: #991b1b; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold;">🔒 Sair</button>
-            </div>
-        </div>
-
-        <!-- Menu de Abas -->
-        <div class="tabs">
-            <button class="tab-btn active" onclick="trocarAba(event, 'aba-novo')">📝 Novo Relatório</button>
-            <button class="tab-btn" onclick="trocarAba(event, 'aba-dash')">📊 Histórico</button>
-        </div>
-
-        <!-- ABA 1: NOVO RELATÓRIO -->
-        <div id="aba-novo" class="tab-content active">
-            <div class="row">
-                <div>
-                    <label for="dataRelatorio" class="required">📅 Data:</label>
-                    <input type="date" id="dataRelatorio">
-                </div>
-                <div>
-                    <label for="equipe" class="required">👥 Equipe:</label>
-                    <select id="equipe">
-                        <option value="">Selecione a equipe...</option>
-                        <option value="Alfa">Alfa</option>
-                        <option value="Bravo">Bravo</option>
-                        <option value="Charlie">Charlie</option>
-                        <option value="Delta">Delta</option>
-                        <option value="Echo">Echo</option>
-                    </select>
-                </div>
-            </div>
-
-            <label for="chefe" class="required">⭐ Chefe de Guarnição:</label>
-            <select id="chefe" class="agente-select"></select>
-
-            <label for="motorista" class="required">🚗 Motorista:</label>
-            <select id="motorista" class="agente-select"></select>
-
-            <label for="patrulheiro1">👮‍♂️ Patrulheiro 01:</label>
-            <select id="patrulheiro1" class="agente-select"></select>
-
-            <label for="patrulheiro2">👮‍♂️ Patrulheiro 02:</label>
-            <select id="patrulheiro2" class="agente-select"></select>
-
-            <label for="viatura">🚙 Viaturas e Equipamentos:</label>
-            <input type="text" id="viatura" value="Viatura 01 - Equipe Operacional" placeholder="Ex: Viatura 01">
-
-            <hr style="margin: 25px 0; border: 0; border-top: 1px solid #e5e7eb;">
-            <h3 style="color: #1e3a8a; font-size: 16px; margin-bottom: 5px;">🕒 Relato Dividido por Turnos</h3>
-
-            <!-- TURNO MANHÃ -->
-            <div class="turno-box">
-                <div class="turno-titulo">🌅 Turno Matutino</div>
-                <label for="resumoManha">Panorama Geral da Manhã:</label>
-                <textarea id="resumoManha" placeholder="Ex: Patrulhamento ostensivo realizado sem alterações..."></textarea>
-                <div>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoManha', 'Patrulhamento ostensivo e preventivo realizado nos logradouros públicos sem alterações.')">🛡️ Sem Alterações</button>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoManha', 'Rondas escolares realizadas com tranquilidade e sem ocorrências.')">🏫 Rondas Escolares</button>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoManha', 'Apoio prestado aos órgãos municipais conforme solicitação.')">🏛️ Apoio Municipal</button>
-                </div>
-                
-                <div class="ocorrencias-container" id="containerOcorrManha">
-                    <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
-                </div>
-                <button type="button" class="btn btn-ocorrencia" onclick="adicionarOcorrencia('Manhã')">🚨 Adicionar Ocorrência / Apoio na Manhã</button>
-            </div>
-
-            <!-- TURNO VESPERTINO -->
-            <div class="turno-box">
-                <div class="turno-titulo">☀️ Turno Vespertino</div>
-                <label for="resumoTarde">Panorama Geral da Tarde:</label>
-                <textarea id="resumoTarde" placeholder="Ex: Rondas preventivas nos prédios públicos..."></textarea>
-                <div>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoTarde', 'Patrulhamento ostensivo e preventivo realizado nos logradouros públicos sem alterações.')">🛡️ Sem Alterações</button>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoTarde', 'Rondas escolares realizadas com tranquilidade e sem ocorrências.')">🏫 Rondas Escolares</button>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoTarde', 'Apoio prestado aos órgãos municipais conforme solicitação.')">🏛️ Apoio Municipal</button>
-                </div>
-                
-                <div class="ocorrencias-container" id="containerOcorrTarde">
-                    <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
-                </div>
-                <button type="button" class="btn btn-ocorrencia" onclick="adicionarOcorrencia('Tarde')">🚨 Adicionar Ocorrência / Apoio na Tarde</button>
-            </div>
-
-            <!-- TURNO NOTURNO -->
-            <div class="turno-box">
-                <div class="turno-titulo">🌙 Turno Noturno</div>
-                <label for="resumoNoite">Panorama Geral da Noite:</label>
-                <textarea id="resumoNoite" placeholder="Ex: Cobertura de eventos e patrulhamento noturno..."></textarea>
-                <div>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoNoite', 'Patrulhamento ostensivo e preventivo realizado nos logradouros públicos sem alterações.')">🛡️ Sem Alterações</button>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoNoite', 'Cobertura de eventos e segurança patrimonial realizada sem alterações.')">🌙 Cobertura Noturna</button>
-                    <button type="button" class="btn-atalho" onclick="inserirNoPanorama('resumoNoite', 'Plantão noturno transcorreu dentro da normalidade e sem ocorrências graves.')">✅ Normalidade</button>
-                </div>
-                
-                <div class="ocorrencias-container" id="containerOcorrNoite">
-                    <div style="font-size: 13px; font-weight: bold; color: #475569; margin-bottom: 5px;">Ocorrências / Apoios Específicos:</div>
-                </div>
-                <button type="button" class="btn btn-ocorrencia" onclick="adicionarOcorrencia('Noite')">🚨 Adicionar Ocorrência / Apoio na Noite</button>
-            </div>
-
-            <button class="btn" onclick="gerarRelatorio()" style="margin-top: 25px;">🚀 Consolidar e Gerar Relatório Completo</button>
-            <div id="statusEnvio" class="status-envio"></div>
-
-            <div id="resultadoFinal" style="display:none;">
-                <label style="margin-top: 25px;">📄 Relatório Consolidado Pronto:</label>
-                <div class="output" id="textoGerado"></div>
-                <button type="button" class="btn btn-whatsapp" onclick="enviarWhatsApp()">💬 Enviar para o WhatsApp</button>
-                <button type="button" class="btn btn-copy" onclick="copiarRelatorio()">📋 Copiar Relatório</button>
-                <button type="button" class="btn btn-pdf" onclick="baixarPDF()">📥 Baixar Relatório em PDF</button>
-            </div>
-        </div>
-
-        <!-- ABA 2: HISTÓRICO -->
-        <div id="aba-dash" class="tab-content">
-            <div class="dash-grid">
-                <div class="dash-card">
-                    <h3 id="statTotal">0</h3>
-                    <p>Plantões Registrados (Mês)</p>
-                </div>
-                <div class="dash-card">
-                    <h3>GM Parelhas</h3>
-                    <p>Status Operacional Ativo</p>
-                </div>
-            </div>
-
-            <label style="margin-top: 20px; font-size: 16px; color: #1e3a8a;">🔍 Buscar e Filtrar Histórico:</label>
-            <div style="margin-top: 5px; margin-bottom: 15px;">
-                <input type="text" id="inputBuscaHistorico" placeholder="Pesquisar por data, chefe ou ocorrência..." oninput="carregarDashboardHistorico()" style="margin-bottom: 10px;">
-                <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                    <button type="button" class="btn-filtro active" onclick="filtrarEquipeHistorico('TODAS', this)">Todas</button>
-                    <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Alfa', this)">Alfa</button>
-                    <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Bravo', this)">Bravo</button>
-                    <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Charlie', this)">Charlie</button>
-                    <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Delta', this)">Delta</button>
-                    <button type="button" class="btn-filtro" onclick="filtrarEquipeHistorico('Echo', this)">Echo</button>
-                </div>
-            </div>
-
-            <label style="margin-top: 15px; font-size: 15px; color: #1e3a8a;">📂 Lista de Relatórios:</label>
-            <div id="listaHistorico" style="margin-top: 10px;">
-                <p style="color: #64748b; font-size: 13px;">Nenhum relatório salvo no histórico local ainda.</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // ==========================================
-// CONFIGURAÇÕES E VARIÁVEIS GLOBAIS
-// ==========================================
-const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbxgNY4JhJUr-PPkRBiYGJYDlRC2nHIPNRNG2EznuiAs46F05LQWcQ_9kL9PIpWJn5-m/exec";
-const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
-const SENHA_ESCALA = "0429";        // Senha apenas para mexer na tabela mensal
-const SENHA_FORMULARIO = "gmp2026"; // Senha apenas para entrar no formulário 
-let filtroEquipeAtual = 'TODAS';
-
-// Define a data atual no campo de relatório ao carregar
-document.addEventListener('DOMContentLoaded', () => {
-    const inputData = document.getElementById('dataRelatorio');
-    if (inputData) {
-        inputData.valueAsDate = new Date();
-    }
-});
-
-window.onload = function() {
-    if (typeof popularSelectsAgentes === 'function') {
-        popularSelectsAgentes();
-    }
-    carregarEscalaDaNuvem(true); // Carrega direto da planilha ao abrir
-};
-
-// ==========================================
-// FUNÇÕES DA ESCALA MENSAL (SINCRONIZADA)
-// ==========================================
-
-function carregarEscalaDaNuvem(bloqueado = true) {
-    const corpo = document.getElementById('tabelaEscalaMensalCorpo');
-    if (!corpo) return;
-
-    corpo.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #64748b;">Carregando escala da nuvem...</td></tr>`;
-
-    fetch(`${URL_BANCO_DADOS}?acao=carregar_escala`)
-        .then(response => response.json())
-        .then(dadosSalvos => {
-            renderizarTabelaComDados(dadosSalvos, bloqueado);
-        })
-        .catch(error => {
-            console.error("Erro ao carregar escala da nuvem, buscando localmente:", error);
-            // Fallback para o localStorage se falhar a internet
-            let dadosLocais = JSON.parse(localStorage.getItem('escala_mensal_gm_v2') || '{}');
-            renderizarTabelaComDados(dadosLocais, bloqueado);
+        document.addEventListener('DOMContentLoaded', () => {
+            const inputData = document.getElementById('dataRelatorio');
+            if (inputData) inputData.valueAsDate = new Date();
+            popularSelectsAgentes();
+            carregarEscalaDoGoogleSheets();
         });
-}
 
-function renderizarTabelaComDados(dadosSalvos, bloqueado = true) {
-    const corpo = document.getElementById('tabelaEscalaMensalCorpo');
-    if (!corpo) return;
-    let html = '';
-
-    const dataAtual = new Date();
-    const ano = dataAtual.getFullYear();
-    const mes = dataAtual.getMonth();
-    const diasDaSemana = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
-    const ultimoDia = new Date(ano, mes + 1, 0).getDate();
-
-    let atributoReadonly = bloqueado ? 'readonly' : '';
-    let estiloFundoInput = bloqueado ? 'background: transparent; text-align: center;' : 'background: #fff; border: 1px solid #2563eb; border-radius: 4px; text-align: center;';
-
-    for (let dia = 1; dia <= ultimoDia; dia++) {
-        let dataObj = new Date(ano, mes, dia);
-        let diaSemanaStr = diasDaSemana[dataObj.getDay()];
-        let diaStr = dia < 10 ? '0' + dia : '' + dia;
-        let rotuloDia = `${diaStr} - ${diaSemanaStr}`;
-
-        let valCh = dadosSalvos['ch_' + dia] || '';
-        let valMot = dadosSalvos['mot_' + dia] || '';
-        let valP1 = dadosSalvos['p1_' + dia] || '';
-        let valP2 = dadosSalvos['p2_' + dia] || '';
-
-        let fundoEstilo = (diaSemanaStr === 'DOM' || diaSemanaStr === 'SÁB') ? 'background: #fdf2f2;' : '';
-
-        html += `
-            <tr style="${fundoEstilo}">
-                <td style="text-align: center; font-weight: bold; background: #f1f5f9; font-size: 11px;">${rotuloDia}</td>
-                <td><input type="text" class="input-escala-celula" style="${estiloFundoInput}" id="ch_${dia}" value="${valCh}" placeholder="${bloqueado ? '' : 'Chefe...'}" ${atributoReadonly}></td>
-                <td><input type="text" class="input-escala-celula" style="${estiloFundoInput}" id="mot_${dia}" value="${valMot}" placeholder="${bloqueado ? '' : 'Motorista...'}" ${atributoReadonly}></td>
-                <td><input type="text" class="input-escala-celula" style="${estiloFundoInput}" id="p1_${dia}" value="${valP1}" placeholder="${bloqueado ? '' : 'Patrulheiro 1...'}" ${atributoReadonly}></td>
-                <td><input type="text" class="input-escala-celula" style="${estiloFundoInput}" id="p2_${dia}" value="${valP2}" placeholder="${bloqueado ? '' : 'Patrulheiro 2...'}" ${atributoReadonly}></td>
-            </tr>
-        `;
-    }
-    corpo.innerHTML = html;
-}
-
-function abrirModalSenhaEscala() {
-    const box = document.getElementById('boxSenhaEscala');
-    if (box) box.style.display = 'block';
-    const inputSenha = document.getElementById('senhaInputEscala');
-    if (inputSenha) {
-        inputSenha.value = '';
-        inputSenha.focus();
-    }
-    const erro = document.getElementById('erroSenhaEscala');
-    if (erro) erro.style.display = 'none';
-}
-
-function fecharModalSenhaEscala() {
-    const box = document.getElementById('boxSenhaEscala');
-    if (box) box.style.display = 'none';
-}
-
-function verificarSenhaEscala() {
-    const senhaDigitada = document.getElementById('senhaInputEscala').value;
-    const erroDiv = document.getElementById('erroSenhaEscala');
-
-    if (senhaDigitada === SENHA_ESCALA) {
-        fecharModalSenhaEscala();
-        carregarEscalaDaNuvem(false); // Carrega liberado para edição
-        
-        const ctrlBloq = document.getElementById('controlesBloqueados');
-        const ctrlDesbloq = document.getElementById('controlesDesbloqueados');
-        const statusTexto = document.getElementById('statusEscalaTexto');
-
-        if (ctrlBloq) ctrlBloq.style.display = 'none';
-        if (ctrlDesbloq) ctrlDesbloq.style.display = 'flex';
-        if (statusTexto) {
-            statusTexto.textContent = "🔓 Modo Edição Ativo (Insira os nomes e clique em Salvar)";
-            statusTexto.style.color = '#059669';
-        }
-    } else {
-        if (erroDiv) erroDiv.style.display = 'block';
-        document.getElementById('senhaInputEscala').value = '';
-    }
-}
-
-function salvarEBloquearEscala() {
-    let dadosParaSalvar = {};
-    const dataAtual = new Date();
-    const ultimoDia = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 0).getDate();
-
-    for (let dia = 1; dia <= ultimoDia; dia++) {
-        dadosParaSalvar['ch_' + dia] = document.getElementById('ch_' + dia)?.value || '';
-        dadosParaSalvar['mot_' + dia] = document.getElementById('mot_' + dia)?.value || '';
-        dadosParaSalvar['p1_' + dia] = document.getElementById('p1_' + dia)?.value || '';
-        dadosParaSalvar['p2_' + dia] = document.getElementById('p2_' + dia)?.value || '';
-    }
-
-    const statusMsg = document.getElementById('statusSalvarEscala');
-    if (statusMsg) {
-        statusMsg.textContent = "Salvando na nuvem...";
-        statusMsg.style.display = 'block';
-        statusMsg.style.color = '#2563eb';
-    }
-
-    // Envia para o Google Sheets via POST
-    fetch(URL_BANCO_DADOS, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            tipo: 'escala_mensal',
-            escala: dadosParaSalvar
-        })
-    })
-    .then(() => {
-        // Salva localmente também como redundância de segurança
-        localStorage.setItem('escala_mensal_gm_v2', JSON.stringify(dadosParaSalvar));
-        
-        carregarEscalaDaNuvem(true); // Bloqueia e atualiza a tabela
-
-        const ctrlBloq = document.getElementById('controlesBloqueados');
-        const ctrlDesbloq = document.getElementById('controlesDesbloqueados');
-        const statusTexto = document.getElementById('statusEscalaTexto');
-
-        if (ctrlDesbloq) ctrlDesbloq.style.display = 'none';
-        if (ctrlBloq) ctrlBloq.style.display = 'block';
-        if (statusTexto) {
-            statusTexto.textContent = "Modo Visualização (Somente leitura para o público geral)";
-            statusTexto.style.color = '#64748b';
+        function mudarTela(idTela) {
+            document.querySelectorAll('.tela-secao').forEach(el => el.classList.remove('ativa'));
+            document.getElementById(idTela).classList.add('ativa');
+            if(idTela === 'telaEscala') {
+                carregarEscalaDoGoogleSheets();
+            }
         }
 
-        if (statusMsg) {
-            statusMsg.textContent = "Salvo com sucesso!";
-            statusMsg.style.color = '#059669';
-            setTimeout(() => { statusMsg.style.display = 'none'; }, 2500);
-        }
-    })
-    .catch(error => {
-        console.error("Erro ao salvar na nuvem:", error);
-        if (statusMsg) {
-            statusMsg.textContent = "Erro ao salvar na nuvem.";
-            statusMsg.style.color = '#dc2626';
-        }
-    });
-}
-
-function bloquearEscalaNovamente() {
-    carregarEscalaDaNuvem(true);
-    const ctrlBloq = document.getElementById('controlesBloqueados');
-    const ctrlDesbloq = document.getElementById('controlesDesbloqueados');
-    const statusTexto = document.getElementById('statusEscalaTexto');
-
-    if (ctrlDesbloq) ctrlDesbloq.style.display = 'none';
-    if (ctrlBloq) ctrlBloq.style.display = 'block';
-    if (statusTexto) {
-        statusTexto.textContent = "Modo Visualização (Somente leitura para o público geral)";
-        statusTexto.style.color = '#64748b';
-    }
-}
-
-// ==========================================
-// CONTROLE DE TELAS E LOGIN
-// ==========================================
-
-function irParaLogin() {
-    if (sessionStorage.getItem('gm_logado') === 'true') {
-        mudarTela('telaFormulario');
-    } else {
-        mudarTela('telaLogin');
-    }
-}
-
-function voltarDashboard() {
-    mudarTela('telaDashboard');
-}
-
-function mudarTela(idTela) {
-    document.querySelectorAll('.tela-secao').forEach(el => el.classList.remove('ativa'));
-    const telaDestino = document.getElementById(idTela);
-    if (telaDestino) telaDestino.classList.add('ativa');
-}
-
-function fazerLogin() {
-    const senhaInput = document.getElementById('senhaAcesso');
-    const erroDiv = document.getElementById('erroLogin');
-    if (!senhaInput) return;
-
-    const senhaDigitada = senhaInput.value;
-
-    if (senhaDigitada === SENHA_FORMULARIO) {
-        sessionStorage.setItem('gm_logado', 'true');
-        senhaInput.value = '';
-        if (erroDiv) erroDiv.style.display = 'none';
-        mudarTela('telaFormulario');
-    } else {
-        if (erroDiv) erroDiv.style.display = 'block';
-        senhaInput.value = '';
-    }
-}
-
-    function fazerLogout() {
-        sessionStorage.removeItem('gm_logado');
-        voltarDashboard();
-    }
-
-    function popularSelectsAgentes() {
-        const selects = document.querySelectorAll('.agente-select');
-        selects.forEach(select => {
-            let valorAtual = select.value;
-            select.innerHTML = '<option value="">Selecione o agente...</option>';
-
-            agentes.forEach(agente => {
-                let opt = document.createElement('option');
-                opt.value = agente;
-                opt.textContent = agente;
-                select.appendChild(opt);
-            });
-            select.value = valorAtual;
-        });
-    }
-
-    function trocarAba(evt, idAba) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(idAba).classList.add('active');
-        evt.currentTarget.classList.add('active');
-
-        if (idAba === 'aba-dash') {
-            carregarDashboardHistorico();
-        }
-    }
-
-    function inserirNoPanorama(idCampo, texto) {
-        const campo = document.getElementById(idCampo);
-        if (campo.value.trim() !== "") {
-            campo.value += " " + texto;
-        } else {
-            campo.value = texto;
-        }
-    }
-
-    function adicionarOcorrencia(turno) {
-        let containerId = '';
-        if (turno === 'Manhã') containerId = 'containerOcorrManha';
-        if (turno === 'Tarde') containerId = 'containerOcorrTarde';
-        if (turno === 'Noite') containerId = 'containerOcorrNoite';
-
-        const container = document.getElementById(containerId);
-        const divItem = document.createElement('div');
-        divItem.className = 'ocorrencia-item';
-
-        divItem.innerHTML = `
-            <button type="button" class="btn-remover-ocorrencia" onclick="this.parentElement.remove()">X Remover</button>
-            <div style="display: flex; gap: 10px; margin-bottom: 8px;">
-                <div style="flex: 1;">
-                    <label style="margin:0; font-size:12px;">⏰ Horário:</label>
-                    <input type="time" class="ocorr-hora" style="padding: 6px;">
-                </div>
-                <div style="flex: 2;">
-                    <label style="margin:0; font-size:12px;">📌 Tipo:</label>
-                    <select class="ocorr-tipo" style="padding: 6px;">
-                        <option value="Ocorrência">Ocorrência</option>
-                        <option value="Apoio">Apoio</option>
-                        <option value="Evento">Evento</option>
-                    </select>
-                </div>
-            </div>
-            <label style="margin:0; font-size:12px;">📝 Detalhes:</label>
-            <textarea class="ocorr-detalhe" placeholder="Descreva o atendimento..." style="height: 60px;"></textarea>
-            <div style="margin-top: 5px;">
-                <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Ronda escolar realizada com tranquilidade.')">🏫 Ronda</button>
-                <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Apoio prestado a órgão público municipal.')">🏛️ Órgão Público</button>
-                <button type="button" class="btn-atalho" onclick="preencherAtalhoOcorr(this, 'Atendimento a perturbação do sossego público.')">🔊 Perturbação</button>
-            </div>
-        `;
-        container.appendChild(divItem);
-    }
-
-    function preencherAtalhoOcorr(btn, texto) {
-        const item = btn.closest('.ocorrencia-item');
-        item.querySelector('.ocorr-detalhe').value = texto;
-    }
-
-    function corrigirTextoLocal(texto) {
-        if (!texto) return "";
-        let textoCorrigido = texto;
-        const correcoes = {
-            "ocrrencia": "ocorrência", "ocrrencias": "ocorrências",
-            "pertubação": "perturbação", "pertabação": "perturbação",
-            "traquilo": "tranquilo", "traquila": "tranquila",
-            "tebe": "teve", "ppla": "pela", "plantao": "plantão",
-            "guarnicao": "guarnição", "viatura": "viatura"
-        };
-        for (let errado in correcoes) {
-            let regex = new RegExp("\b" + errado + "\b", "gi");
-            textoCorrigido = textoCorrigido.replace(regex, correcoes[errado]);
-        }
-        return textoCorrigido;
-    }
-
-    function montarTextoTurno(nomeTurno, resumoId, containerId) {
-        let resumo = document.getElementById(resumoId).value.trim();
-        resumo = corrigirTextoLocal(resumo);
-
-        const container = document.getElementById(containerId);
-        const ocorrencias = container.querySelectorAll('.ocorrencia-item');
-
-        let bloco = `*${nomeTurno}*\n`;
-        if (resumo) {
-            bloco += `Panorama: ${resumo}\n`;
-        } else if (ocorrencias.length === 0) {
-            bloco += `Sem registros relevantes.\n`;
+        function fazerLogin() {
+            const senha = document.getElementById('senhaAcesso').value;
+            if (senha === SENHA_FORMULARIO) {
+                document.getElementById('senhaAcesso').value = '';
+                document.getElementById('erroLogin').style.display = 'none';
+                mudarTela('telaFormulario');
+            } else {
+                document.getElementById('erroLogin').style.display = 'block';
+            }
         }
 
-        if (ocorrencias.length > 0) {
-            bloco += `Ocorrências e Apoios:\n`;
-            ocorrencias.forEach((ocorr) => {
-                let hora = ocorr.querySelector('.ocorr-hora').value || "Horário não inf.";
-                let tipo = ocorr.querySelector('.ocorr-tipo').value || "Ocorrência";
-                let detalhe = corrigirTextoLocal(ocorr.querySelector('.ocorr-detalhe').value) || "Sem detalhes.";
-                bloco += `  - [${hora}] ${tipo}: ${detalhe}\n`;
+        function popularSelectsAgentes() {
+            const selects = ['selectChefe', 'selectMotorista', 'selectPatrulheiro1', 'selectPatrulheiro2'];
+            selects.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    el.innerHTML = '<option value="">Selecione o agente...</option>';
+                    agentes.forEach(agente => {
+                        el.innerHTML += `<option value="${agente}">${agente}</option>`;
+                    });
+                }
             });
         }
-        return bloco;
-    }
 
-    async function gerarRelatorio() {
-        const data = document.getElementById('dataRelatorio').value;
-        const equipe = document.getElementById('equipe').value;
-        const chefe = document.getElementById('chefe').value;
-        const motorista = document.getElementById('motorista').value;
-        const patrulheiro1 = document.getElementById('patrulheiro1').value || "Não informado";
-        const patrulheiro2 = document.getElementById('patrulheiro2').value || "Não informado";
-        const viatura = document.getElementById('viatura').value;
+        // --- CARREGAR ESCALA DO GOOGLE SHEETS ---
+        function carregarEscalaDoGoogleSheets() {
+            const corpo = document.getElementById('tabelaEscalaCorpo');
+            corpo.innerHTML = `<tr><td colspan="6">Buscando dados da escala...</td></tr>`;
 
-        if (!data || !equipe || !chefe || !motorista) {
-            alert("⚠️ Por favor, preencha os campos obrigatórios (*): Data, Equipe, Chefe e Motorista.");
-            return;
+            fetch(`${URL_BANCO_DADOS}?acao=carregar_escala`)
+                .then(res => res.json())
+                .then(dados => {
+                    let html = '';
+                    // Exemplo de iteração caso a planilha retorne uma lista de dias
+                    if(Array.isArray(dados) && dados.length > 0) {
+                        dados.forEach(linha => {
+                            html += `<tr>
+                                <td>${linha.data || ''}</td>
+                                <td>${linha.dia || ''}</td>
+                                <td>${linha.chefe || ''}</td>
+                                <td>${linha.motorista || ''}</td>
+                                <td>${linha.patrulheiro1 || ''}</td>
+                                <td>${linha.patrulheiro2 || ''}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        html = `<tr><td colspan="6">Nenhuma escala cadastrada na planilha ainda ou formato aguardando configuração.</td></tr>`;
+                    }
+                    corpo.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error(err);
+                    corpo.innerHTML = `<tr><td colspan="6" style="color: red;">Erro ao carregar escala da nuvem.</td></tr>`;
+                });
         }
 
-        const partesData = data.split('-');
-        const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+        // --- AUXILIAR DE VOZ (SPEECH-TO-TEXT) ---
+        function iniciarReconhecimentoVoz() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Seu navegador não suporta assistente de voz. Utilize o Google Chrome.");
+                return;
+            }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'pt-BR';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
 
-        let textoManha = montarTextoTurno("TURNO MATUTINO", "resumoManha", "containerOcorrManha");
-        let textoTarde = montarTextoTurno("TURNO VESPERTINO", "resumoTarde", "containerOcorrTarde");
-        let textoNoite = montarTextoTurno("TURNO NOTURNO", "resumoNoite", "containerOcorrNoite");
+            const btnVoz = document.querySelector('.btn-voz');
+            btnVoz.textContent = "🎙️ Ouvindo... Fale agora!";
+            btnVoz.style.backgroundColor = "#fca5a5";
 
-        const textoPronto = `RELATÓRIO DE PLANTÃO - GM PARELHAS
-Data: ${dataFormatada} | Equipe: ${equipe}
-Emprego: ${viatura}
+            recognition.onresult = (event) => {
+                const textoTranscrito = event.results[0][0].transcript;
+                const campo = document.getElementById('textoOcorrencia');
+                campo.value += (campo.value ? " " : "") + textoTranscrito;
+            };
 
-Composição da Equipe:
-- Chefe de Guarnição: ${chefe}
-- Motorista: ${motorista}
-- Patrulheiro 01: ${patrulheiro1}
-- Patrulheiro 02: ${patrulheiro2}
+            recognition.onerror = () => {
+                alert("Erro ao capturar a voz. Tente novamente.");
+            };
 
----
-RELATO CRONOLÓGICO POR TURNOS:
+            recognition.onsend = recognition.onend = () => {
+                btnVoz.textContent = "🎤 Ditar Ocorrência por Voz";
+                btnVoz.style.backgroundColor = "#e2e8f0";
+            };
 
-${textoManha}
-${textoTarde}
-${textoNoite}`;
+            recognition.start();
+        }
 
-        document.getElementById('textoGerado').textContent = textoPronto;
-        document.getElementById('resultadoFinal').style.display = 'block';
+        // --- ENVIO CONSOLIDADO EM 2 COLUNAS ---
+        function enviarRelatorioConsolidado() {
+            const data = document.getElementById('dataRelatorio').value;
+            const chefe = document.getElementById('selectChefe').value;
+            const motorista = document.getElementById('selectMotorista').value;
+            const p1 = document.getElementById('selectPatrulheiro1').value;
+            const p2 = document.getElementById('selectPatrulheiro2').value;
+            const ocorrencia = document.getElementById('textoOcorrencia').value;
 
-        salvarNoHistoricoLocal({
-            data: dataFormatada, equipe: equipe, chefe: chefe, viatura: viatura, texto: textoPronto
-        });
+            if(!data || !chefe) {
+                alert("Preencha ao menos a data e o chefe de guarnição.");
+                return;
+            }
 
-        const statusDiv = document.getElementById('statusEnvio');
-        statusDiv.style.display = 'block';
-        statusDiv.style.color = '#2563eb';
-        statusDiv.textContent = "⏳ Salvando relatório na planilha...";
+            // Consolidando todos os dados em um único texto estruturado para a Coluna 2
+            const dadosConsolidados = `CHEFE: ${chefe} | MOTORISTA: ${motorista || 'N/D'} | PATRULHEIRO 1: ${p1 || 'N/D'} | PATRULHEIRO 2: ${p2 || 'N/D'} || OCORRÊNCIA: ${ocorrencia || 'Sem alterações.'}`;
 
-        const dadosParaEnviar = {
-            data: dataFormatada, equipe: equipe, chefe: chefe,
-            motorista: motorista, patrulheiro1: patrulheiro1,
-            patrulheiro2: patrulheiro2, viatura: viatura, relatorio: textoPronto
-        };
+            const status = document.getElementById('statusEnvio');
+            status.textContent = "Enviando relatório...";
+            status.style.color = "#2563eb";
 
-        try {
-            await fetch(URL_BANCO_DADOS, {
-                method: 'POST', mode: 'no-cors',
+            fetch(URL_BANCO_DADOS, {
+                method: 'POST',
+                mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dadosParaEnviar)
+                body: JSON.stringify({
+                    tipo: 'relatorio_consolidado',
+                    data: data,
+                    dados_consolidados: dadosConsolidados
+                })
+            })
+            .then(() => {
+                status.textContent = "Relatório enviado com sucesso!";
+                status.style.color = "#059669";
+                document.getElementById('textoOcorrencia').value = '';
+                setTimeout(() => { status.textContent = ""; }, 3000);
+            })
+            .catch(err => {
+                console.error(err);
+                status.textContent = "Erro ao enviar relatório.";
+                status.style.color = "#dc2626";
             });
-            statusDiv.style.color = '#059669';
-            statusDiv.textContent = "✅ Salvo na planilha com sucesso!";
-        } catch (error) {
-            statusDiv.style.color = '#dc2626';
-            statusDiv.textContent = "⚠️ Salvo no celular, mas erro ao conectar na planilha.";
         }
-    }
-
-    function salvarNoHistoricoLocal(registro) {
-        let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
-        historico.unshift(registro);
-        if (historico.length > 30) historico.pop();
-        localStorage.setItem('gm_historico', JSON.stringify(historico));
-    }
-
-    function filtrarEquipeHistorico(equipe, btnEl) {
-        filtroEquipeAtual = equipe;
-        document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('active'));
-        btnEl.classList.add('active');
-        carregarDashboardHistorico();
-    }
-
-    function carregarDashboardHistorico() {
-        let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
-        document.getElementById('statTotal').textContent = historico.length;
-
-        const termoBusca = document.getElementById('inputBuscaHistorico').value.toLowerCase();
-        const listaDiv = document.getElementById('listaHistorico');
-
-        let historicoFiltrado = historico.filter(item => {
-            let atendeEquipe = (filtroEquipeAtual === 'TODAS' || item.equipe === filtroEquipeAtual);
-            let textoCompleto = (item.data + " " + item.equipe + " " + item.chefe + " " + item.viatura + " " + item.texto).toLowerCase();
-            let atendeBusca = textoCompleto.includes(termoBusca);
-            return atendeEquipe && atendeBusca;
-        });
-
-        if (historicoFiltrado.length === 0) {
-            listaDiv.innerHTML = '<p style="color: #64748b; font-size: 13px;">Nenhum relatório encontrado com esses critérios.</p>';
-            return;
-        }
-
-        let html = '';
-        historicoFiltrado.forEach((item) => {
-            let indexReal = historico.findIndex(h => h.data === item.data && h.chefe === item.chefe && h.texto === item.texto);
-            html += `
-                <div class="historico-item">
-                    <div class="historico-header">
-                        <span>📅 ${item.data} - Equipe ${item.equipe}</span>
-                        <span>⭐ ${item.chefe}</span>
-                    </div>
-                    <div class="historico-body">
-                        🚙 ${item.viatura}<br>
-                        <button type="button" class="btn-atalho" style="margin-top:6px;" onclick="carregarRelatorioHistorico(${indexReal})">👁️ Ver Relatório</button>
-                    </div>
-                </div>
-            `;
-        });
-        listaDiv.innerHTML = html;
-    }
-
-    function carregarRelatorioHistorico(index) {
-        let historico = JSON.parse(localStorage.getItem('gm_historico') || '[]');
-        let item = historico[index];
-        if (item) {
-            document.getElementById('textoGerado').textContent = item.texto;
-            document.getElementById('resultadoFinal').style.display = 'block';
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('aba-novo').classList.add('active');
-            document.querySelectorAll('.tab-btn')[0].classList.add('active');
-        }
-    }
-
-    function enviarWhatsApp() {
-        const textoGerado = document.getElementById('textoGerado').textContent;
-        const urlWhatsApp = `https://api.whatsapp.com/send?text=${encodeURIComponent(textoGerado)}`;
-        window.open(urlWhatsApp, '_blank');
-    }
-
-    function copiarRelatorio() {
-        const textoGerado = document.getElementById('textoGerado').textContent;
-        navigator.clipboard.writeText(textoGerado).then(() => {
-            const btn = document.querySelector('.btn-whatsapp + .btn-copy');
-            const btnOriginal = btn.textContent;
-            btn.textContent = "✅ Copiado!";
-            setTimeout(() => { btn.textContent = btnOriginal; }, 2000);
-        });
-    }
-
-    function baixarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const textoGerado = document.getElementById('textoGerado').textContent;
-        
-        doc.setFont("Helvetica", "normal");
-        doc.setFontSize(11);
-        const linhasDoTexto = doc.splitTextToSize(textoGerado, 180);
-        doc.text(linhasDoTexto, 15, 20);
-        doc.save('relatorio_gm_parelhas.pdf');
-    }
-</script>
-
+    </script>
 </body>
 </html>
