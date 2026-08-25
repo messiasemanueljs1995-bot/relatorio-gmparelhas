@@ -648,6 +648,31 @@
             document.getElementById('resultadoFinal').style.display = 'block';
 
             salvarHistoricoLocal({ data, equipe, chefe, relatorioTexto });
+            enviarParaPlanilhaNuvem(data, relatorioTexto);
+        }
+
+
+        function enviarParaPlanilhaNuvem(data, relatorioTexto) {
+            const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbwckImpTF66hIhESxm7KvkaLhgOq-GnsyBqkMhtVxo9fngCafK3oZxUM6bote4qFU-6/exec";
+
+            const dadosEnvio = {
+                acao: 'salvar_relatorio',
+                data: data,
+                relatorioTexto: relatorioTexto
+            };
+
+            fetch(URL_BANCO_DADOS, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dadosEnvio)
+            })
+            .then(() => {
+                console.log('Relatório enviado para a planilha com sucesso!');
+            })
+            .catch(err => console.error('Erro ao enviar relatório:', err));
         }
 
         function formatarOcorricoesTurno(containerId) {
