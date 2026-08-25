@@ -656,23 +656,25 @@
             const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbwckImpTF66hIhESxm7KvkaLhgOq-GnsyBqkMhtVxo9fngCafK3oZxUM6bote4qFU-6/exec";
 
             const dadosEnvio = {
-                acao: 'salvar_relatorio',
                 data: data,
                 relatorioTexto: relatorioTexto
             };
 
+        // Envia usando POST com JSON (direto para a função doPost do seu Apps Script)
             fetch(URL_BANCO_DADOS, {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/json'
-                },
+            'Content-Type': 'text/plain;charset=utf-8'
+            },
                 body: JSON.stringify(dadosEnvio)
             })
             .then(() => {
-                console.log('Relatório enviado para a planilha com sucesso!');
+                console.log('Requisição de salvamento enviada com sucesso!');
             })
-            .catch(err => console.error('Erro ao enviar relatório:', err));
+            .catch(err => {
+                console.error('Erro na requisição:', err);
+            });
         }
 
         function formatarOcorricoesTurno(containerId) {
@@ -721,7 +723,7 @@
 
             let filtrados = historico.filter(item => {
                 const bateEquipe = (filtroEquipeAtual === 'TODAS' || item.equipe === filtroEquipeAtual);
-                const bateBusca = item.relatorioTexto.toLowerCase().includes(termoBusca) || item.chefe.toLowerCase().includes(termoBusca);
+                const bateBusca = (item.relatorioTexto || '').toLowerCase().includes(termoBusca) || (item.chefe || '').toLowerCase().includes(termoBusca);
                 return bateEquipe && bateBusca;
             });
 
