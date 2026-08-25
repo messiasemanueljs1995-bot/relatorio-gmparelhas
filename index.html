@@ -37,6 +37,15 @@
         .tela-secao { display: none; }
         .tela-secao.ativa { display: block; }
         
+        /* Tela de Login */
+        .login-box {
+            max-width: 400px;
+            margin: 40px auto;
+            text-align: center;
+        }
+        .login-box h3 { color: var(--primary); margin-bottom: 20px; }
+        .erro-login { color: #dc2626; font-size: 13px; margin-top: 10px; display: none; font-weight: bold; }
+
         /* Menu Principal */
         .dashboard-menu {
             display: flex;
@@ -77,9 +86,9 @@
         th { background-color: #f1f5f9; color: #334155; }
         
         /* Formulários e Inputs */
-        .form-group { margin-bottom: 15px; }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; text-align: left; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
         textarea { resize: vertical; height: 90px; }
         
@@ -104,11 +113,12 @@
             text-decoration: none;
             font-weight: bold;
             cursor: pointer;
+            text-align: left;
         }
         .voltar-link:hover { text-decoration: underline; }
 
         /* Turnos e Ocorrências */
-        .turno-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .turno-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: left; }
         .turno-titulo { font-weight: bold; font-size: 15px; color: var(--primary); margin-bottom: 10px; }
         .ocorrencias-container { margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px; }
         
@@ -120,6 +130,7 @@
             margin-bottom: 15px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
             position: relative;
+            text-align: left;
         }
         .btn-remover-ocorrencia { 
             background: #fee2e2; 
@@ -133,8 +144,8 @@
             float: right;
         }
         .btn-remover-ocorrencia:hover { background: #fecaca; }
-        .btn-ocorrencia { background: #ff0101; font-size: 13px; padding: 8px; margin-top: 8px; width: auto; }
-        .btn-ocorrencia:hover { background: #2563eb; }
+        .btn-ocorrencia { background: #b10000; font-size: 13px; padding: 8px; margin-top: 8px; width: auto; }
+        .btn-ocorrencia:hover { background: #880000; }
 
         .btn-copy { background-color: #0d9488; }
         .btn-copy:hover { background-color: #0f766e; }
@@ -143,7 +154,7 @@
         .btn-whatsapp { background-color: #16a34a; }
         .btn-whatsapp:hover { background-color: #15803d; }
 
-        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 6px; margin-top: 10px; font-family: Arial, sans-serif; font-size: 14px; color: #000; line-height: 1.5; white-space: pre-wrap; }
+        .output { background: #f9fafb; border: 1px solid #e5e7eb; padding: 15px; border-radius: 6px; margin-top: 10px; font-family: Arial, sans-serif; font-size: 14px; color: #000; line-height: 1.5; white-space: pre-wrap; text-align: left; }
         .required::after { content: " *"; color: red; }
         .status-envio { font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; display: none; }
 
@@ -163,7 +174,7 @@
         .btn-filtro { background: #e2e8f0; border: none; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: bold; color: #475569; }
         .btn-filtro.active { background: #1e3a8a; color: white; }
         
-        .historico-item { background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 10px; }
+        .historico-item { background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 12px; border-radius: 6px; margin-bottom: 10px; text-align: left; }
     </style>
 </head>
 <body>
@@ -179,7 +190,24 @@
             <h3 style="text-align: center; color: #334155;">Painel de Controle Operacional</h3>
             <div class="dashboard-menu">
                 <button class="btn-menu" onclick="mudarTela('telaEscala')">📅 Mostrar Escala do Mês</button>
-                <button class="btn-menu btn-secundario" onclick="mudarTela('telaFormulario')">📝 Ir para o Formulário de Relatório</button>
+                <button class="btn-menu btn-secundario" onclick="tentarIrParaFormulario()">📝 Ir para o Formulário de Relatório</button>
+            </div>
+        </div>
+
+        <!-- 0. TELA DE LOGIN (Aparece ao tentar entrar no formulário sem estar logado) -->
+        <div id="telaLogin" class="tela-secao">
+            <a class="voltar-link" onclick="mudarTela('telaDashboard')">← Voltar ao Início</a>
+            <div class="login-box">
+                <h3>🔒 Identificação Operacional</h3>
+                <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Insira a senha de acesso para liberar o Formulário de Relatório.</p>
+                
+                <div class="form-group">
+                    <label for="senhaLogin">Senha de Acesso:</label>
+                    <input type="password" id="senhaLogin" placeholder="Digite a senha..." onkeypress="if(event.key === 'Enter') realizarLogin()">
+                </div>
+                
+                <button class="btn" onclick="realizarLogin()" style="background-color: var(--primary);">Confirmar e Acessar</button>
+                <div id="erroLogin" class="erro-login">Senha incorreta. Tente novamente.</div>
             </div>
         </div>
 
@@ -202,7 +230,7 @@
                         </tr>
                     </thead>
                     <tbody id="tabelaEscalaCorpo">
-                        <tr><td colspan="6">Carregando escala da nuvem...[cite: 3]</td></tr>
+                        <tr><td colspan="6">Carregando escala da nuvem[cite: 3]...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -210,7 +238,10 @@
 
         <!-- 3. TELA DE FORMULÁRIO DE RELATÓRIO E HISTÓRICO -->
         <div id="telaFormulario" class="tela-secao">
-            <a class="voltar-link" onclick="mudarTela('telaDashboard')">← Voltar ao Início</a>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <a class="voltar-link" onclick="mudarTela('telaDashboard')" style="margin-bottom: 0;">← Voltar ao Início</a>
+                <button onclick="fazerLogout()" style="background: #fee2e2; color: #991b1b; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer;">Bloquear / Sair</button>
+            </div>
             
             <!-- Menu de Abas -->
             <div class="tabs">
@@ -368,6 +399,7 @@
 
     <script>
         const URL_BANCO_DADOS = "https://script.google.com/macros/s/AKfycbxgNY4JhJUr-PPkRBiYGJYDlRC2nHIPNRNG2EznuiAs46F05LQWcQ_9kL9PIpWJn5-m/exec";
+        const SENHA_MESTRE = "gm2026"; // Senha padrão de acesso (pode alterar conforme preferir)
         const agentes = ["Artur", "Alex", "Acacio", "Francinaldo", "Francisco", "Josimar", "Joclecio", "Jair", "Messias", "Maharyshy", "Paulo", "Ricardo", "Rodrigo", "Thiago", "Terezinha", "Wanderley"];
         let filtroEquipeAtual = 'TODAS';
         
@@ -375,13 +407,43 @@
             const inputData = document.getElementById('dataRelatorio');
             if (inputData) inputData.valueAsDate = new Date();
             popularSelectsAgentes();
-            carregarEscalaDoGoogleSheets();
-            carregarDashboardHistorico();
+            
+            // Inicia sempre na Tela Principal (Dashboard)
+            mudarTela('telaDashboard');
         });
+
+        function tentarIrParaFormulario() {
+            // Verifica se já está autenticado na sessão atual
+            if (sessionStorage.getItem('gm_logado') === 'true') {
+                mudarTela('telaFormulario');
+            } else {
+                mudarTela('telaLogin'); // Se não estiver logado, exibe a tela de senha
+            }
+        }
+
+        function realizarLogin() {
+            const senhaDigitada = document.getElementById('senhaLogin').value;
+            const erroEl = document.getElementById('erroLogin');
+
+            if (senhaDigitada === SENHA_MESTRE) {
+                sessionStorage.setItem('gm_logado', 'true');
+                erroEl.style.display = 'none';
+                document.getElementById('senhaLogin').value = '';
+                mudarTela('telaFormulario'); // Vai direto para o formulário após acertar a senha
+            } else {
+                erroEl.style.display = 'block';
+            }
+        }
+
+        function fazerLogout() {
+            sessionStorage.removeItem('gm_logado');
+            mudarTela('telaDashboard');
+        }
 
         function mudarTela(idTela) {
             document.querySelectorAll('.tela-secao').forEach(el => el.classList.remove('ativa'));
             document.getElementById(idTela).classList.add('ativa');
+            
             if(idTela === 'telaEscala') {
                 carregarEscalaDoGoogleSheets();
             } else if(idTela === 'telaFormulario') {
@@ -452,12 +514,10 @@
             }
         }
 
-        // --- ADICIONAR OCORRÊNCIA COM ESTRUTURA COMPLETA E ATALHOS ---
         function adicionarOcorrencia(turno) {
             const containerId = turno === 'Manhã' ? 'containerOcorrManha' : (turno === 'Tarde' ? 'containerOcorrTarde' : 'containerOcorrNoite');
             const container = document.getElementById(containerId);
             
-            // ID único para referenciar o textarea interno da ocorrência
             const idUnicoTextarea = 'ocorrencia_txt_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
             
             const div = document.createElement('div');
@@ -504,7 +564,6 @@
             }
         }
 
-        // --- DITADO POR VOZ ---
         function iniciarDitadoVoz(idCampo, btnElement) {
             if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
                 alert('Seu navegador não suporta reconhecimento de voz.');
@@ -537,7 +596,6 @@
             recognition.start();
         }
 
-        // --- GERAR RELATÓRIO COMPLETO ---
         function gerarRelatorio() {
             const data = document.getElementById('dataRelatorio').value;
             const equipe = document.getElementById('equipe').value;
@@ -595,7 +653,7 @@
         function formatarOcorricoesTurno(containerId) {
             const itens = document.querySelectorAll(`#${containerId} .ocorrencia-item`);
             let textoOcorrencias = "";
-            itens.forEach((item, idx) => {
+            itens.forEach((item) => {
                 const horario = item.querySelector('.input-ocorrencia-horario').value || '--:--';
                 const tipo = item.querySelector('.input-ocorrencia-tipo').value;
                 const detalhes = item.querySelector('.input-ocorrencia-detalhes').value || '';
